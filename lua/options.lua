@@ -56,4 +56,7 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+-- let g:
+vimtex_view_method = 'zathura'
 -- vim: ts=2 sts=2 sw=2 et
+vim.cmd("colorscheme rose-pine-moon")
