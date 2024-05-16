@@ -57,6 +57,12 @@ vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 
 -- let g:
-vimtex_view_method = 'zathura'
+vim.g.vimtex_quickfix_open_on_warning = 0
+vim.g.vimtex_view_method = 'zathura'
+vim.g.vimtex_view_general_viewer = 'zathura'
+vim.g.vimtex_quickfix_ignore_filters = {
+  "Underfull",
+  "Overfull",
+}
 -- vim: ts=2 sts=2 sw=2 et
 vim.cmd("colorscheme rose-pine-moon")
