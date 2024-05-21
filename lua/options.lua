@@ -65,4 +65,5 @@ vim.g.vimtex_quickfix_ignore_filters = {
   "Overfull",
 }
 -- vim: ts=2 sts=2 sw=2 et
+-- vim.cmd("colorscheme rose-pine-moon")
 vim.cmd("colorscheme rose-pine-moon")
