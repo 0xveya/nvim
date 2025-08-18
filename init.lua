@@ -3,6 +3,7 @@
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
+vim.opt.winborder = "rounded"
 
 -- [[ Setting options ]]
 require("options")
@@ -202,4 +203,25 @@ require("oil").setup({
 -- vim.o.background = "dark" -- or "light" for light mode
 vim.cmd([[colorscheme rose-pine]])
 -- vim.cmd([[colorscheme catppuccin-mocha]])
--- vim.cmd([[colorscheme gruvbox]])
+
+vim.api.nvim_create_augroup("cpp_tabs", { clear = true })
+vim.api.nvim_create_autocmd("FileType", {
+	group = "cpp_tabs",
+	pattern = { "c", "cpp" },
+	callback = function()
+		vim.opt_local.expandtab = false
+		vim.opt_local.tabstop = 4
+		vim.opt_local.shiftwidth = 4
+		vim.opt_local.softtabstop = 0
+	end,
+})
+
+vim.lsp.config("lua_ls", {
+	settings = {
+		Lua = {
+			workspace = {
+				libary = vim.api.nvim_get_runtime_file("", true),
+			},
+		},
+	},
+})

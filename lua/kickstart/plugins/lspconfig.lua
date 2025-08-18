@@ -172,6 +172,19 @@ return {
 						},
 					},
 				},
+				tinymist = {
+					settings = {
+						tinymist = {
+							lint = {
+								enabled = true,
+								when = "onSave",
+							},
+						},
+					},
+					filetypes = { "typst" },
+					-- Uncomment and set if you need a custom root_dir:
+					-- root_dir = require("lspconfig.util").root_pattern("typst.toml", ".git"),
+				},
 			}
 			-- Ensure the servers and tools above are installed
 			--  To check the current status of installed tools and/or manually install

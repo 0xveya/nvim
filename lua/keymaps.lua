@@ -62,3 +62,8 @@ vim.keymap.set("n", "<leader>rc", ":RunClose<CR>", { noremap = true, silent = fa
 vim.keymap.set("n", "<leader>crf", ":CRFiletype<CR>", { noremap = true, silent = false })
 vim.keymap.set("n", "<leader>crp", ":CRProjects<CR>", { noremap = true, silent = false })
 vim.api.nvim_create_user_command("W", "w", {})
+vim.keymap.set("n", "<leader>rp", ":wa<CR>:!uv pip install -e .<CR>", { noremap = true, silent = true })
+
+-- Window splitting keybindings using Ctrl+Shift+hjkl
+vim.keymap.set("n", "<C-A-h>", ":split<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<C-A-v>", ":vsplit<CR>", { noremap = true, silent = true })
