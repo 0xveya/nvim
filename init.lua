@@ -227,3 +227,9 @@ vim.lsp.config("lua_ls", {
 })
 
 vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
+
+vim.g.clipboard = "osc52"
+
+require("mistral_fix").setup({
+	agent_id = "ag:a1053bd4:20251014:i-love-spelling:814f38c9",
+})
