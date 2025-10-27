@@ -204,18 +204,6 @@ require("oil").setup({
 vim.cmd([[colorscheme rose-pine]])
 -- vim.cmd([[colorscheme catppuccin-mocha]])
 
-vim.api.nvim_create_augroup("cpp_tabs", { clear = true })
-vim.api.nvim_create_autocmd("FileType", {
-	group = "cpp_tabs",
-	pattern = { "c", "cpp" },
-	callback = function()
-		vim.opt_local.expandtab = false
-		vim.opt_local.tabstop = 4
-		vim.opt_local.shiftwidth = 4
-		vim.opt_local.softtabstop = 0
-	end,
-})
-
 vim.lsp.config("lua_ls", {
 	settings = {
 		Lua = {
@@ -226,10 +214,40 @@ vim.lsp.config("lua_ls", {
 	},
 })
 
+-- PowerShell LSP with Stroustrup formatting (non-Allman)
+vim.lsp.config("powershell_es", {
+	settings = {
+		powershell = {
+			codeFormatting = {
+				Preset = "Stroustrup",
+			},
+		},
+	},
+})
+
+-- Go: Auto organize imports on save
+vim.api.nvim_create_autocmd("BufWritePre", {
+	pattern = "*.go",
+	callback = function()
+		local filename = vim.fn.expand("%")
+		vim.cmd("silent! !goimports -w " .. filename)
+		-- Reload the file to show changes
+		vim.cmd("checktime")
+	end,
+})
+
 vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 
 vim.g.clipboard = "osc52"
 
 require("mistral_fix").setup({
 	agent_id = "ag:a1053bd4:20251014:i-love-spelling:814f38c9",
+})
+
+vim.api.nvim_create_autocmd("VimEnter", {
+	callback = function()
+		for _, client in ipairs(vim.lsp.get_clients({ name = "clangd" })) do
+			vim.lsp.stop_client(client.id)
+		end
+	end,
 })

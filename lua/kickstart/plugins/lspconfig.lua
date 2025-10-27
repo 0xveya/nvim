@@ -137,7 +137,22 @@ return {
 			--        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
 			local servers = {
 				-- clangd = {},
-				-- gopls = {},
+				gopls = {
+					settings = {
+						gopls = {
+							formatting = {
+								organizeImports = true,
+							},
+							analyses = {
+								unusedparams = true,
+								unusedwrite = true,
+							},
+							codeActions = {
+								unusedparams = true,
+							},
+						},
+					},
+				},
 				-- pyright = {},
 				-- rust_analyzer = {},
 				-- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -158,12 +173,13 @@ return {
 							runtime = { version = "LuaJIT" },
 							workspace = {
 								checkThirdParty = false,
+								libary = vim.api.nvim_get_runtime_file("", true),
 								-- Tells lua_ls where to find all the Lua files that you have loaded
 								-- for your neovim configuration.
-								library = {
-									"${3rd}/luv/library",
-									unpack(vim.api.nvim_get_runtime_file("", true)),
-								},
+								-- library = {
+								-- 	"${3rd}/luv/library",
+								-- 	unpack(vim.api.nvim_get_runtime_file("", true)),
+								-- },
 								-- If lua_ls is really slow on your computer, you can try this instead:
 								-- library = { vim.env.VIMRUNTIME },
 							},
@@ -205,16 +221,25 @@ return {
 			require("mason-lspconfig").setup({
 				handlers = {
 					function(server_name)
+						if server_name == "clangd" then
+							return
+						end
+
 						local server = servers[server_name] or {}
-						require("lspconfig")[server_name].setup({
-							cmd = server.cmd,
-							settings = server.settings,
-							filetypes = server.filetypes,
-							-- This handles overriding only values explicitly passed
-							-- by the server configuration above. Useful when disabling
-							-- certain features of an LSP (for example, turning off formatting for tsserver)
+						local opts = {
 							capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {}),
-						})
+						}
+						if server.cmd then
+							opts.cmd = server.cmd
+						end
+						if server.settings then
+							opts.settings = server.settings
+						end
+						if server.filetypes then
+							opts.filetypes = server.filetypes
+						end
+
+						require("lspconfig")[server_name].setup(opts)
 					end,
 				},
 			})
