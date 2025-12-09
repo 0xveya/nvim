@@ -1,87 +1,170 @@
 -- debug.lua
---
--- Shows how to use the DAP plugin to debug your code.
---
--- Primarily focused on configuring the debugger for Go, but can
--- be extended to other languages as well. That's why it's called
--- kickstart.nvim and not kitchen-sink.nvim ;)
+-- nvim-dap + dap-ui + Go (dlv) with robust args handling and safer UI open
 
 return {
-  -- NOTE: Yes, you can install new plugins here!
-  'mfussenegger/nvim-dap',
-  -- NOTE: And you can specify dependencies as well
-  dependencies = {
-    -- Creates a beautiful debugger UI
-    'rcarriga/nvim-dap-ui',
+	"mfussenegger/nvim-dap",
+	dependencies = {
+		"rcarriga/nvim-dap-ui",
+		"nvim-neotest/nvim-nio",
+		"williamboman/mason.nvim",
+		"jay-babu/mason-nvim-dap.nvim",
+		"leoluz/nvim-dap-go",
+	},
+	config = function()
+		local dap = require("dap")
+		local dapui = require("dapui")
 
-    -- Installs the debug adapters for you
-    'williamboman/mason.nvim',
-    'jay-babu/mason-nvim-dap.nvim',
+		-- Make sure your plugins are up to date to avoid timing bugs
+		require("mason-nvim-dap").setup({
+			automatic_setup = true,
+			handlers = {},
+			ensure_installed = { "delve" },
+		})
 
-    -- Add your own debuggers here
-    'leoluz/nvim-dap-go',
-  },
-  config = function()
-    local dap = require 'dap'
-    local dapui = require 'dapui'
+		-- Optional: if you hit edge cases on nightly, force cmdheight=1 while dap-ui operates
+		-- vim.o.cmdheight = 1
 
-    require('mason-nvim-dap').setup {
-      -- Makes a best effort to setup the various debuggers with
-      -- reasonable debug configurations
-      automatic_setup = true,
+		-- Keep layout simple and avoid "console" element when using integratedTerminal
+		dapui.setup({
+			icons = { expanded = "▾", collapsed = "▸", current_frame = "*" },
+			controls = {
+				icons = {
+					pause = "⏸",
+					play = "▶",
+					step_into = "⏎",
+					step_over = "⏭",
+					step_out = "⏮",
+					step_back = "b",
+					run_last = "▶▶",
+					terminate = "⏹",
+					disconnect = "⏏",
+				},
+			},
+			layouts = {
+				{
+					elements = { "scopes", "breakpoints", "stacks", "watches" },
+					size = 40,
+					position = "left",
+				},
+				{
+					-- Use only the DAP REPL at the bottom. Avoid "console" here.
+					elements = { "repl" },
+					size = 10,
+					position = "bottom",
+				},
+			},
+		})
 
-      -- You can provide additional configuration to the handlers,
-      -- see mason-nvim-dap README for more information
-      handlers = {},
+		-- Safer UI lifecycle: defer opening slightly and reset layout to avoid stale buffers
+		dap.listeners.after.event_initialized["dapui_config"] = function()
+			vim.defer_fn(function()
+				dapui.open({ reset = true })
+			end, 50)
+		end
+		dap.listeners.before.event_terminated["dapui_config"] = function()
+			dapui.close()
+		end
+		dap.listeners.before.event_exited["dapui_config"] = function()
+			dapui.close()
+		end
 
-      -- You'll need to check that you have the required things installed
-      -- online, please don't ask me how to install them :)
-      ensure_installed = {
-        -- Update this to ensure that you have the debuggers for the langs you want
-        'delve',
-      },
-    }
+		-- Basic debugging keymaps
+		vim.keymap.set("n", "<F5>", dap.continue, { desc = "Debug: Start/Continue" })
+		vim.keymap.set("n", "<F1>", dap.step_into, { desc = "Debug: Step Into" })
+		vim.keymap.set("n", "<F2>", dap.step_over, { desc = "Debug: Step Over" })
+		vim.keymap.set("n", "<F3>", dap.step_out, { desc = "Debug: Step Out" })
+		vim.keymap.set("n", "<F9>", dapui.toggle, { desc = "Debug: Toggle UI" })
+		vim.keymap.set("n", "<leader>b", dap.toggle_breakpoint, { desc = "Debug: Toggle Breakpoint" })
+		vim.keymap.set("n", "<leader>B", function()
+			dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
+		end, { desc = "Debug: Set Breakpoint" })
 
-    -- Basic debugging keymaps, feel free to change to your liking!
-    vim.keymap.set('n', '<F5>', dap.continue, { desc = 'Debug: Start/Continue' })
-    vim.keymap.set('n', '<F1>', dap.step_into, { desc = 'Debug: Step Into' })
-    vim.keymap.set('n', '<F2>', dap.step_over, { desc = 'Debug: Step Over' })
-    vim.keymap.set('n', '<F3>', dap.step_out, { desc = 'Debug: Step Out' })
-    vim.keymap.set('n', '<leader>b', dap.toggle_breakpoint, { desc = 'Debug: Toggle Breakpoint' })
-    vim.keymap.set('n', '<leader>B', function()
-      dap.set_breakpoint(vim.fn.input 'Breakpoint condition: ')
-    end, { desc = 'Debug: Set Breakpoint' })
+		-- Small shellwords splitter so quoted args work: e.g. --name "Jane Doe"
+		local function shellwords(str)
+			local args, i, n = {}, 1, #str
+			while i <= n do
+				while i <= n and str:sub(i, i):match("%s") do
+					i = i + 1
+				end
+				if i > n then
+					break
+				end
+				local c = str:sub(i, i)
+				local quote = (c == '"' or c == "'") and c or nil
+				local arg = ""
+				if quote then
+					i = i + 1
+					while i <= n do
+						local ch = str:sub(i, i)
+						if ch == "\\" and quote == '"' and i < n then
+							-- allow escapes inside double quotes
+							i = i + 1
+							ch = str:sub(i, i)
+							arg = arg .. ch
+							i = i + 1
+						elseif ch == quote then
+							i = i + 1
+							break
+						else
+							arg = arg .. ch
+							i = i + 1
+						end
+					end
+				else
+					while i <= n and not str:sub(i, i):match("%s") do
+						arg = arg .. str:sub(i, i)
+						i = i + 1
+					end
+				end
+				table.insert(args, arg)
+			end
+			return args
+		end
 
-    -- Dap UI setup
-    -- For more information, see |:help nvim-dap-ui|
-    dapui.setup {
-      -- Set icons to characters that are more likely to work in every terminal.
-      --    Feel free to remove or use ones that you like more! :)
-      --    Don't feel like these are good choices.
-      icons = { expanded = '▾', collapsed = '▸', current_frame = '*' },
-      controls = {
-        icons = {
-          pause = '⏸',
-          play = '▶',
-          step_into = '⏎',
-          step_over = '⏭',
-          step_out = '⏮',
-          step_back = 'b',
-          run_last = '▶▶',
-          terminate = '⏹',
-          disconnect = '⏏',
-        },
-      },
-    }
+		-- DAP-Go setup: keep dlv attached to Neovim terminal for CLI apps
+		require("dap-go").setup({
+			delve = {
+				detached = false, -- important for interactive CLIs in the integrated terminal
+			},
+		})
 
-    -- Toggle to see last session result. Without this, you can't see session output in case of unhandled exception.
-    vim.keymap.set('n', '<F7>', dapui.toggle, { desc = 'Debug: See last session result.' })
-
-    dap.listeners.after.event_initialized['dapui_config'] = dapui.open
-    dap.listeners.before.event_terminated['dapui_config'] = dapui.close
-    dap.listeners.before.event_exited['dapui_config'] = dapui.close
-
-    -- Install golang specific config
-    require('dap-go').setup()
-  end,
+		-- Go configurations focused on CLI apps with args
+		dap.configurations.go = {
+			{
+				type = "go",
+				name = "Debug (module root)",
+				request = "launch",
+				mode = "debug",
+				program = "${workspaceFolder}",
+				cwd = "${workspaceFolder}",
+				console = "integratedTerminal",
+			},
+			{
+				type = "go",
+				name = "Debug (module root) with args",
+				request = "launch",
+				mode = "debug",
+				program = "${workspaceFolder}",
+				cwd = "${workspaceFolder}",
+				console = "integratedTerminal",
+				args = function()
+					local input = vim.fn.input("Args: ")
+					return shellwords(input)
+				end,
+			},
+			{
+				type = "go",
+				name = "Debug (current dir) with args",
+				request = "launch",
+				mode = "debug",
+				program = ".",
+				cwd = "${fileDirname}",
+				console = "integratedTerminal",
+				args = function()
+					local input = vim.fn.input("Args: ")
+					return shellwords(input)
+				end,
+			},
+		}
+	end,
 }

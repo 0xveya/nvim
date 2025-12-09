@@ -201,7 +201,6 @@ require("oil").setup({
 })
 
 -- vim.o.background = "dark" -- or "light" for light mode
-vim.cmd([[colorscheme rose-pine]])
 -- vim.cmd([[colorscheme catppuccin-mocha]])
 
 vim.lsp.config("lua_ls", {
@@ -251,3 +250,7 @@ vim.api.nvim_create_autocmd("VimEnter", {
 		end
 	end,
 })
+
+vim.o.autowriteall = true
+
+vim.cmd([[colorscheme rose-pine]])
