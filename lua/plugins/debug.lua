@@ -1,6 +1,3 @@
--- debug.lua
--- nvim-dap + dap-ui + Go (dlv) with robust args handling and safer UI open
-
 return {
 	"mfussenegger/nvim-dap",
 	dependencies = {
@@ -14,17 +11,12 @@ return {
 		local dap = require("dap")
 		local dapui = require("dapui")
 
-		-- Make sure your plugins are up to date to avoid timing bugs
 		require("mason-nvim-dap").setup({
 			automatic_setup = true,
 			handlers = {},
 			ensure_installed = { "delve" },
 		})
 
-		-- Optional: if you hit edge cases on nightly, force cmdheight=1 while dap-ui operates
-		-- vim.o.cmdheight = 1
-
-		-- Keep layout simple and avoid "console" element when using integratedTerminal
 		dapui.setup({
 			icons = { expanded = "▾", collapsed = "▸", current_frame = "*" },
 			controls = {
@@ -47,7 +39,6 @@ return {
 					position = "left",
 				},
 				{
-					-- Use only the DAP REPL at the bottom. Avoid "console" here.
 					elements = { "repl" },
 					size = 10,
 					position = "bottom",
@@ -55,7 +46,6 @@ return {
 			},
 		})
 
-		-- Safer UI lifecycle: defer opening slightly and reset layout to avoid stale buffers
 		dap.listeners.after.event_initialized["dapui_config"] = function()
 			vim.defer_fn(function()
 				dapui.open({ reset = true })
@@ -79,7 +69,6 @@ return {
 			dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
 		end, { desc = "Debug: Set Breakpoint" })
 
-		-- Small shellwords splitter so quoted args work: e.g. --name "Jane Doe"
 		local function shellwords(str)
 			local args, i, n = {}, 1, #str
 			while i <= n do
@@ -97,7 +86,6 @@ return {
 					while i <= n do
 						local ch = str:sub(i, i)
 						if ch == "\\" and quote == '"' and i < n then
-							-- allow escapes inside double quotes
 							i = i + 1
 							ch = str:sub(i, i)
 							arg = arg .. ch
@@ -121,14 +109,12 @@ return {
 			return args
 		end
 
-		-- DAP-Go setup: keep dlv attached to Neovim terminal for CLI apps
 		require("dap-go").setup({
 			delve = {
-				detached = false, -- important for interactive CLIs in the integrated terminal
+				detached = false,
 			},
 		})
 
-		-- Go configurations focused on CLI apps with args
 		dap.configurations.go = {
 			{
 				type = "go",
