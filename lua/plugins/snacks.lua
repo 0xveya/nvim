@@ -13,8 +13,15 @@ return {
 				end,
 			},
 			sections = {
-				-- i need to fix this kekw
-				{ section = "terminal", cmd = "blahaj -s", hl = "header", padding = 1, indent = 8 },
+				{
+					section = "terminal",
+					cmd = "blahaj -s -c trans",
+					hl = "header",
+					padding = 2,
+					indent = 0,
+					height = 17,
+					width = 80,
+				},
 				{ title = "MRU", padding = 1 },
 				{ section = "recent_files", limit = 8, padding = 1 },
 				{ title = "Sessions", padding = 1 },
@@ -33,6 +40,11 @@ return {
 		statuscolumn = { enabled = true },
 		words = { enabled = true },
 		gitbrowse = { enabled = true },
+		lazygit = { enabled = true, opts = {
+			git = {
+				overrideGpg = true,
+			},
+		} },
 	},
 	keys = {
 		{
@@ -46,6 +58,13 @@ return {
 			"<leader>gf",
 			function()
 				Snacks.gitbrowse({ what = "file" })
+			end,
+			desc = "doenst work on codeberg kekw",
+		},
+		{
+			"<leader>lg",
+			function()
+				Snacks.lazygit()
 			end,
 			desc = "doenst work on codeberg kekw",
 		},
