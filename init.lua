@@ -236,3 +236,16 @@ vim.api.nvim_create_autocmd("VimEnter", {
 vim.o.autowriteall = true
 
 vim.cmd([[colorscheme rose-pine]])
+
+local function CleanShaDaTmp()
+	local shada_dir = vim.fn.stdpath("state") .. "/shada"
+	local pattern = shada_dir .. "/main.shada.tmp.*"
+
+	for _, file in ipairs(vim.fn.glob(pattern, false, true)) do
+		os.remove(file)
+	end
+end
+
+vim.api.nvim_create_autocmd("VimLeavePre", {
+	callback = CleanShaDaTmp,
+})
