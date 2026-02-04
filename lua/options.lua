@@ -60,4 +60,8 @@ vim.g.vimtex_quickfix_ignore_filters = {
 	"Overfull",
 	"geometry Warning",
 }
+
+vim.g.user42 = "sfurst"
+vim.g.mail42 = "sfurst@student.42vienna.com"
+
 -- vim: ts=2 sts=2 sw=2 et

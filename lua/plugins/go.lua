@@ -14,6 +14,7 @@ return {
 						analyses = {
 							unusedparams = true,
 							unusedwrite = true,
+							nilness = true,
 						},
 						codeActions = {
 							unusedparams = true,

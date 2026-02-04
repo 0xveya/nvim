@@ -249,3 +249,50 @@ end
 vim.api.nvim_create_autocmd("VimLeavePre", {
 	callback = CleanShaDaTmp,
 })
+
+vim.g.dbs = {
+	{
+		name = "wrapped",
+		url = "duckdb:~/coding/uuhcordWrapped/data/wrapped.duckdb?access_mode=READ_ONLY",
+	},
+}
+
+vim.keymap.set("v", "<leader>q", function()
+	local dbs = vim.g.dbs or {}
+	local choices = {}
+	local db_map = {}
+
+	for _, db in ipairs(dbs) do
+		table.insert(choices, db.name)
+		db_map[db.name] = db.url
+	end
+
+	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "x", false)
+
+	vim.ui.select(choices, { prompt = "Select database: " }, function(choice)
+		if choice then
+			vim.schedule(function()
+				vim.cmd("'<,'>DB " .. db_map[choice])
+			end)
+		end
+	end)
+end, { noremap = true })
+
+vim.keymap.set("n", "<leader>db", function()
+	local dbs = vim.g.dbs or {}
+	local choices = {}
+	local db_map = {}
+
+	for _, db in ipairs(dbs) do
+		table.insert(choices, db.name)
+		db_map[db.name] = db.url
+	end
+
+	vim.ui.select(choices, { prompt = "Select DB for completion: " }, function(choice)
+		if choice then
+			vim.api.nvim_buf_set_var(0, "db", db_map[choice])
+			print("Attached DB: " .. choice)
+		end
+	end)
+end)
+vim.g.vim_dadbod_completion_schemas = 1
