@@ -1,8 +1,14 @@
 return {
 	"Stefanistkuhl/ft_count_lines.nvim",
-	config = function()
-		require("ft_count_lines").setup({
-			enable_on_start = true,
-		})
-	end,
+	ft = "c",
+	opts = {
+		enable_on_start = true,
+		formatter = function(count)
+			local icon = "🤓"
+			if count > 25 then
+				icon = "⚠️"
+			end
+			return icon .. " " .. count
+		end,
+	},
 }
