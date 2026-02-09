@@ -41,3 +41,4 @@ vim.keymap.set("n", "<C-A-v>", ":vsplit<CR>", { noremap = true, silent = true })
 
 vim.keymap.set("n", "<M-j>", "<cmd>cnext<CR>")
 vim.keymap.set("n", "<M-k>", "<cmd>cprev<CR>")
+vim.keymap.set("n", "<leader>42", ":Stdheader<CR>")

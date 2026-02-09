@@ -296,3 +296,9 @@ vim.keymap.set("n", "<leader>db", function()
 	end)
 end)
 vim.g.vim_dadbod_completion_schemas = 1
+
+vim.api.nvim_create_autocmd("BufEnter", {
+	group = vim.api.nvim_create_augroup("coding42", { clear = true }),
+	pattern = vim.fn.expand("~/coding/42/*.c"),
+	command = "Stdheader",
+})
