@@ -12,6 +12,7 @@ return {
 				powershell = { "ps_formatter" },
 				go = { "goimports" },
 				c = { "c_formatter_42" },
+				cpp = { "c_formatter_42" },
 			},
 			formatters = {
 				ps_formatter = {
