@@ -13,6 +13,7 @@ return {
 				go = { "goimports" },
 				c = { "c_formatter_42" },
 				cpp = { "c_formatter_42" },
+				sql = { "sleek" },
 			},
 			formatters = {
 				ps_formatter = {

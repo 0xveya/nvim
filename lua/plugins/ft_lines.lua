@@ -1,5 +1,5 @@
 return {
-	"Stefanistkuhl/ft_count_lines.nvim",
+	"0xveya/ft_count_lines.nvim",
 	ft = "c",
 	opts = {
 		enable_on_start = true,
