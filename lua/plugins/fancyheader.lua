@@ -1,6 +1,6 @@
 return {
-	"Stefanistkuhl/fancy-header.nvim",
-	ft = { "c", "cpp", "h" },
+	"0xveya/fancy-header.nvim",
+	ft = { "c", "cpp", "h", "make" },
 
 	opts = {
 		colors = {

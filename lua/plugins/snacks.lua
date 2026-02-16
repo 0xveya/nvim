@@ -35,6 +35,14 @@ return {
 		picker = {
 			enabled = true,
 			ui_select = true,
+			sources = {
+				files = {
+					exclude = { "*.o", "*.a", ".git", "node_modules", "*.out" },
+				},
+				grep = {
+					exclude = { "*.o", "*.a", ".git", "node_modules", "*.out" },
+				},
+			},
 		},
 		notifier = { enabled = true },
 		quickfile = { enabled = true },

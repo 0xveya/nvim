@@ -60,7 +60,17 @@ return {
 			capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
 
 			local servers = {
-				-- clangd = {},
+				clangd = {
+					cmd = { "clangd", "--header-insertion=iwyu", "--compile-commands-dir=." },
+					root_dir = require("lspconfig.util").root_pattern(".clangd", ".git"),
+					capabilities = {
+						offsetEncoding = "utf-8",
+					},
+					on_new_config = function(new_config, new_root_dir)
+						-- Add the include path relative to the project root
+						table.insert(new_config.cmd, "-I" .. new_root_dir .. "/ex00/include")
+					end,
+				},
 				lua_ls = {
 					settings = {
 						Lua = {
@@ -96,10 +106,6 @@ return {
 			require("mason-lspconfig").setup({
 				handlers = {
 					function(server_name)
-						if server_name == "clangd" then
-							return
-						end
-
 						local server = servers[server_name] or {}
 						local opts = {
 							capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {}),

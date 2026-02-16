@@ -225,14 +225,6 @@ require("mistral_fix").setup({
 	agent_id = "ag:a1053bd4:20251014:i-love-spelling:814f38c9",
 })
 
-vim.api.nvim_create_autocmd("VimEnter", {
-	callback = function()
-		for _, client in ipairs(vim.lsp.get_clients({ name = "clangd" })) do
-			vim.lsp.stop_client(client.id)
-		end
-	end,
-})
-
 vim.o.autowriteall = true
 
 vim.cmd([[colorscheme rose-pine]])
