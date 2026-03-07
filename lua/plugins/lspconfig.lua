@@ -93,6 +93,19 @@ return {
 					},
 					filetypes = { "typst" },
 				},
+				zls = {
+					cmd = { "zls" },
+					filetypes = { "zig", "zir" },
+					root_dir = require("lspconfig.util").root_pattern("zls.json", "build.zig", ".git"),
+					settings = {
+						zls = {
+							enable_inlay_hints = true,
+							enable_snippets = true,
+							warn_style = true,
+							publish_diagnostics = true,
+						},
+					},
+				},
 			}
 
 			require("mason").setup()
