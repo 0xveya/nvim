@@ -293,3 +293,6 @@ vim.api.nvim_create_autocmd("BufEnter", {
 	pattern = { vim.fn.expand("~/coding/42/*.c"), vim.fn.expand("~/coding/42/*.h") },
 	command = "Stdheader",
 })
+
+vim.g.omni_sql_no_default_maps = 1
+vim.opt.sessionoptions = { "buffers", "curdir", "tabpages", "winsize", "help", "globals", "skiprtp", "folds" }

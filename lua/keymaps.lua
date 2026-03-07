@@ -42,3 +42,34 @@ vim.keymap.set("n", "<C-A-v>", ":vsplit<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<M-j>", "<cmd>cnext<CR>")
 vim.keymap.set("n", "<M-k>", "<cmd>cprev<CR>")
 vim.keymap.set("n", "<leader>42", ":Stdheader<CR>")
+
+vim.keymap.set("x", "<leader>y", function()
+	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", true)
+
+	vim.schedule(function()
+		local start_pos = vim.fn.getpos("'<")
+		local first_line = vim.fn.getline(start_pos[2])
+
+		local lhs = string.match(first_line, "^(.-)%s*[:]?=")
+
+		if not lhs then
+			print("Could not detect an assignment (:= or =) on the first line.")
+			return
+		end
+
+		local target_var = string.match(lhs, "([%w_]+)%s*$")
+
+		if not target_var then
+			print("Could not find a valid variable to rename.")
+			return
+		end
+
+		vim.ui.input({ prompt = "Rename exact word '" .. target_var .. "' to: " }, function(new_name)
+			if new_name and new_name ~= "" then
+				local cmd = string.format("'<,'>s/\\<%s\\>/%s/g", target_var, new_name)
+				vim.cmd(cmd)
+				print(" Successfully renamed '" .. target_var .. "' to '" .. new_name .. "'")
+			end
+		end)
+	end)
+end, { desc = "Smart rename last variable in visual selection" })
