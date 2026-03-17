@@ -37,10 +37,10 @@ return {
 			ui_select = true,
 			sources = {
 				files = {
-					exclude = { "*.o", "*.a", ".git", "node_modules", "*.out" },
+					exclude = { "*.o", "*.a", ".git", "node_modules", "*.out", ".jj" },
 				},
 				grep = {
-					exclude = { "*.o", "*.a", ".git", "node_modules", "*.out" },
+					exclude = { "*.o", "*.a", ".git", "node_modules", "*.out", ".jj" },
 				},
 			},
 		},

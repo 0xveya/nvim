@@ -208,15 +208,6 @@ vim.lsp.config("powershell_es", {
 	},
 })
 
-vim.api.nvim_create_autocmd("BufWritePre", {
-	pattern = "*.go",
-	callback = function()
-		local filename = vim.fn.expand("%")
-		vim.cmd("silent! !goimports -w " .. filename)
-		vim.cmd("checktime")
-	end,
-})
-
 vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 
 vim.g.clipboard = "osc52"
