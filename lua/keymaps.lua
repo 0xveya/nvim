@@ -66,10 +66,29 @@ vim.keymap.set("x", "<leader>y", function()
 
 		vim.ui.input({ prompt = "Rename exact word '" .. target_var .. "' to: " }, function(new_name)
 			if new_name and new_name ~= "" then
-				local cmd = string.format("'<,'>s/\\<%s\\>/%s/g", target_var, new_name)
+				local cmd = string.format(
+					[['<,'>s/".\{-}"\|`.\{-}`\|\<%s\>/\=submatch(0)[0] == '"' || submatch(0)[0] == '`' ? submatch(0) : '%s'/ge]],
+					target_var,
+					new_name
+				)
 				vim.cmd(cmd)
 				print(" Successfully renamed '" .. target_var .. "' to '" .. new_name .. "'")
 			end
 		end)
 	end)
-end, { desc = "Smart rename last variable in visual selection" })
+end, { desc = "Smart rename last variable in visual selection (ignores strings)" })
+
+local map = vim.keymap.set
+
+map("n", "<leader>ga", "<cmd>GoCodeAction<CR>", { desc = "Go Code Action" })
+map("n", "<leader>grg", "<cmd>GoRename<CR>", { desc = "LSP Rename (Go)" })
+map("n", "<leader>gi", "<cmd>GoIfErr<CR>", { desc = "Add if err" })
+map("n", "<leader>gc", "<cmd>GoCmt<CR>", { desc = "Generate Comment" })
+
+map("n", "<leader>gj", "<cmd>GoAddTag json<CR>", { desc = "Add JSON tags" })
+map("n", "<leader>gy", "<cmd>GoAddTag yaml<CR>", { desc = "Add YAML tags" })
+
+map("n", "<leader>gq", "<cmd>GoAlt<CR>", { desc = "Switch to Test/Implementation file" })
+map("n", "<leader>gq", "<cmd>GoAlt<CR>", { desc = "Switch to Test/Implementation file" })
+map("n", "<leader>cl", vim.lsp.codelens.run, { desc = "Run Code Lens" })
+map("n", "<leader>k", "<cmd>qa<CR>", { desc = "quit erm" })

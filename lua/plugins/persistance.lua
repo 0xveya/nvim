@@ -18,15 +18,9 @@ return {
 		vim.api.nvim_create_autocmd("VimEnter", {
 			nested = true,
 			callback = function()
-				local argc = vim.fn.argc()
 				local arg = vim.fn.argv(0)
-
-				if argc == 0 then
+				if vim.fn.argc() == 0 or (vim.fn.argc() == 1 and vim.fn.isdirectory(arg) == 1) then
 					require("persistence").load()
-				elseif argc == 1 and vim.fn.isdirectory(arg) == 1 then
-					vim.defer_fn(function()
-						require("persistence").load()
-					end, 10)
 				end
 			end,
 		})
