@@ -6,13 +6,12 @@ return {
 			"neovim/nvim-lspconfig",
 			"nvim-treesitter/nvim-treesitter",
 		},
-		event = { "CmdlineEnter" },
 		ft = { "go", "gomod" },
 		build = ':lua require("go.install").update_all_sync()',
 		opts = {
 			lsp_keymaps = false,
 			verbose = false,
-
+			lsp_codelens = false,
 			lsp_cfg = {
 				settings = {
 					gopls = {
@@ -38,7 +37,7 @@ return {
 		config = function(_, opts)
 			require("go").setup(opts)
 
-			local format_sync_grp = vim.api.nvim_create_augroup("GoFormat", {})
+			local format_sync_grp = vim.api.nvim_create_augroup("GoFormat", { clear = true })
 			vim.api.nvim_create_autocmd("BufWritePre", {
 				pattern = "*.go",
 				callback = function()
