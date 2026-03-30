@@ -1,49 +1,72 @@
+local function map(mode, lhs, rhs, desc, opts)
+	opts = opts or {}
+	if desc then
+		opts.desc = desc
+	end
+	if opts.silent == nil then
+		opts.silent = true
+	end
+	vim.keymap.set(mode, lhs, rhs, opts)
+end
+
+local function nmap(lhs, rhs, desc, opts)
+	map("n", lhs, rhs, desc, opts)
+end
+
+local function xmap(lhs, rhs, desc, opts)
+	map("x", lhs, rhs, desc, opts)
+end
+
+local function tmap(lhs, rhs, desc, opts)
+	map("t", lhs, rhs, desc, opts)
+end
+
 vim.opt.hlsearch = true
-vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
+nmap("<Esc>", "<cmd>nohlsearch<CR>")
 
-vim.keymap.set("n", "<leader>pv", vim.cmd.Oil)
+nmap("<leader>pv", vim.cmd.Oil)
 
-vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous [D]iagnostic message" })
-vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next [D]iagnostic message" })
-vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float, { desc = "Show diagnostic [E]rror messages" })
-vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
+nmap("[d", vim.diagnostic.goto_prev, "Go to previous [D]iagnostic message")
+nmap("]d", vim.diagnostic.goto_next, "Go to next [D]iagnostic message")
+nmap("<leader>e", vim.diagnostic.open_float, "Show diagnostic [E]rror messages")
+nmap("<leader>q", vim.diagnostic.setloclist, "Open diagnostic [Q]uickfix list")
 
-vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
+tmap("<Esc><Esc>", "<C-\\><C-n>", "Exit terminal mode")
 
-vim.keymap.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left window" })
-vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
-vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
-vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
+nmap("<C-h>", "<C-w><C-h>", "Move focus to the left window")
+nmap("<C-l>", "<C-w><C-l>", "Move focus to the right window")
+nmap("<C-j>", "<C-w><C-j>", "Move focus to the lower window")
+nmap("<C-k>", "<C-w><C-k>", "Move focus to the upper window")
 
-vim.api.nvim_set_keymap("n", "<C-d>", "<C-d>zz", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("n", "<C-u>", "<C-u>zz", { noremap = true, silent = true })
+nmap("<C-d>", "<C-d>zz")
+nmap("<C-u>", "<C-u>zz")
 
 vim.api.nvim_create_autocmd("TextYankPost", {
 	desc = "Highlight when yanking (copying) text",
-	group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
+	group = vim.api.nvim_create_augroup("user-highlight-yank", { clear = true }),
 	callback = function()
 		vim.hl.on_yank()
 	end,
 })
 
-vim.keymap.set("n", "<leader>r", ":RunCode<CR>", { noremap = true, silent = false })
-vim.keymap.set("n", "<leader>rf", ":RunFile<CR>", { noremap = true, silent = false })
-vim.keymap.set("n", "<leader>rft", ":RunFile tab<CR>", { noremap = true, silent = false })
-vim.keymap.set("n", "<leader>rp", ":RunProject<CR>", { noremap = true, silent = false })
-vim.keymap.set("n", "<leader>rc", ":RunClose<CR>", { noremap = true, silent = false })
-vim.keymap.set("n", "<leader>crf", ":CRFiletype<CR>", { noremap = true, silent = false })
-vim.keymap.set("n", "<leader>crp", ":CRProjects<CR>", { noremap = true, silent = false })
+nmap("<leader>r", "<cmd>RunCode<CR>", nil, { silent = false })
+nmap("<leader>rf", "<cmd>RunFile<CR>", nil, { silent = false })
+nmap("<leader>rft", "<cmd>RunFile tab<CR>", nil, { silent = false })
+nmap("<leader>rp", "<cmd>RunProject<CR>", nil, { silent = false })
+nmap("<leader>rc", "<cmd>RunClose<CR>", nil, { silent = false })
+nmap("<leader>crf", "<cmd>CRFiletype<CR>", nil, { silent = false })
+nmap("<leader>crp", "<cmd>CRProjects<CR>", nil, { silent = false })
 vim.api.nvim_create_user_command("W", "w", {})
-vim.keymap.set("n", "<leader>rp", ":wa<CR>:!uv pip install -e .<CR>", { noremap = true, silent = true })
+nmap("<leader>ri", "<cmd>wa<CR><cmd>!uv pip install -e .<CR>", "Install editable package")
 
-vim.keymap.set("n", "<C-A-h>", ":split<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<C-A-v>", ":vsplit<CR>", { noremap = true, silent = true })
+nmap("<C-A-h>", "<cmd>split<CR>")
+nmap("<C-A-v>", "<cmd>vsplit<CR>")
 
-vim.keymap.set("n", "<M-j>", "<cmd>cnext<CR>")
-vim.keymap.set("n", "<M-k>", "<cmd>cprev<CR>")
-vim.keymap.set("n", "<leader>42", ":Stdheader<CR>")
+nmap("<M-j>", "<cmd>cnext<CR>")
+nmap("<M-k>", "<cmd>cprev<CR>")
+nmap("<leader>42", "<cmd>Stdheader<CR>")
 
-vim.keymap.set("x", "<leader>y", function()
+xmap("<leader>y", function()
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", true)
 
 	vim.schedule(function()
@@ -76,19 +99,16 @@ vim.keymap.set("x", "<leader>y", function()
 			end
 		end)
 	end)
-end, { desc = "Smart rename last variable in visual selection (ignores strings)" })
+end, "Smart rename last variable in visual selection (ignores strings)")
 
-local map = vim.keymap.set
+nmap("<leader>ga", "<cmd>GoCodeAction<CR>", "Go Code Action")
+nmap("<leader>grg", "<cmd>GoRename<CR>", "LSP Rename (Go)")
+nmap("<leader>gi", "<cmd>GoIfErr<CR>", "Add if err")
+nmap("<leader>gc", "<cmd>GoCmt<CR>", "Generate Comment")
 
-map("n", "<leader>ga", "<cmd>GoCodeAction<CR>", { desc = "Go Code Action" })
-map("n", "<leader>grg", "<cmd>GoRename<CR>", { desc = "LSP Rename (Go)" })
-map("n", "<leader>gi", "<cmd>GoIfErr<CR>", { desc = "Add if err" })
-map("n", "<leader>gc", "<cmd>GoCmt<CR>", { desc = "Generate Comment" })
+nmap("<leader>gj", "<cmd>GoAddTag json<CR>", "Add JSON tags")
+nmap("<leader>gy", "<cmd>GoAddTag yaml<CR>", "Add YAML tags")
 
-map("n", "<leader>gj", "<cmd>GoAddTag json<CR>", { desc = "Add JSON tags" })
-map("n", "<leader>gy", "<cmd>GoAddTag yaml<CR>", { desc = "Add YAML tags" })
-
-map("n", "<leader>gq", "<cmd>GoAlt<CR>", { desc = "Switch to Test/Implementation file" })
-map("n", "<leader>gq", "<cmd>GoAlt<CR>", { desc = "Switch to Test/Implementation file" })
-map("n", "<leader>cl", vim.lsp.codelens.run, { desc = "Run Code Lens" })
-map("n", "<leader>k", "<cmd>qa<CR>", { desc = "quit erm" })
+nmap("<leader>gq", "<cmd>GoAlt<CR>", "Switch to Test/Implementation file")
+nmap("<leader>cl", vim.lsp.codelens.run, "Run Code Lens")
+nmap("<leader>k", "<cmd>qa<CR>", "quit erm")

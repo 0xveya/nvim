@@ -9,7 +9,7 @@ return {
 		},
 		config = function()
 			vim.api.nvim_create_autocmd("LspAttach", {
-				group = vim.api.nvim_create_augroup("kickstart-lsp-attach", { clear = true }),
+				group = vim.api.nvim_create_augroup("user-lsp-attach", { clear = true }),
 				callback = function(event)
 					local map = function(keys, func, desc)
 						vim.keymap.set("n", keys, func, { buffer = event.buf, desc = "LSP: " .. desc })
@@ -42,16 +42,44 @@ return {
 					map("gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
 
 					local client = vim.lsp.get_client_by_id(event.data.client_id)
-					if client and client.server_capabilities.documentHighlightProvider then
+
+					if client and client:supports_method("textDocument/documentHighlight") then
+						local highlight_augroup = vim.api.nvim_create_augroup("user-lsp-highlight", { clear = false })
 						vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
 							buffer = event.buf,
+							group = highlight_augroup,
 							callback = vim.lsp.buf.document_highlight,
 						})
 
 						vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
 							buffer = event.buf,
+							group = highlight_augroup,
 							callback = vim.lsp.buf.clear_references,
 						})
+
+						vim.api.nvim_create_autocmd("LspDetach", {
+							group = vim.api.nvim_create_augroup("user-lsp-detach", { clear = true }),
+							callback = function(event2)
+								vim.lsp.buf.clear_references()
+								vim.api.nvim_clear_autocmds({ group = "user-lsp-highlight", buffer = event2.buf })
+							end,
+						})
+					end
+
+					if client and client:supports_method("textDocument/inlayHint") then
+						pcall(function()
+							vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
+						end)
+
+						vim.keymap.set("n", "<leader>th", function()
+							vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
+						end, { buffer = event.buf, desc = "[T]oggle Inlay [H]ints" })
+					end
+
+					if client and client:supports_method("textDocument/codeLens") then
+						pcall(function()
+							vim.lsp.codelens.enable(true, { bufnr = event.buf })
+						end)
 					end
 				end,
 			})
@@ -78,6 +106,15 @@ return {
 							workspace = {
 								checkThirdParty = false,
 								library = vim.api.nvim_get_runtime_file("", true),
+							},
+						},
+					},
+				},
+				powershell_es = {
+					settings = {
+						powershell = {
+							codeFormatting = {
+								Preset = "Stroustrup",
 							},
 						},
 					},
@@ -120,18 +157,9 @@ return {
 				handlers = {
 					function(server_name)
 						local server = servers[server_name] or {}
-						local opts = {
+						local opts = vim.tbl_deep_extend("force", {}, server, {
 							capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {}),
-						}
-						if server.cmd then
-							opts.cmd = server.cmd
-						end
-						if server.settings then
-							opts.settings = server.settings
-						end
-						if server.filetypes then
-							opts.filetypes = server.filetypes
-						end
+						})
 
 						require("lspconfig")[server_name].setup(opts)
 					end,
