@@ -6,24 +6,72 @@ vim.opt.runtimepath:prepend(vim.fn.expand("~/coding/gleepSitter"))
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
+		branch = "main",
+		lazy = false,
 		build = ":TSUpdate",
 		config = function()
-			-- Register gleep as a known parser so nvim-treesitter won't complain
-			local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
-			parser_config.gleep = {
+			local ts = require("nvim-treesitter")
+			local parsers = require("nvim-treesitter.parsers")
+
+			parsers.gleep = {
 				install_info = {
 					url = vim.fn.expand("~/coding/gleepSitter"),
 					files = { "src/parser.c" },
 				},
 				filetype = "gleep",
+				tier = 3,
 			}
 
-			---@diagnostic disable-next-line: missing-fields
-			require("nvim-treesitter.configs").setup({
-				ensure_installed = { "bash", "c", "html", "lua", "markdown", "vim", "vimdoc" },
-				auto_install = true,
-				highlight = { enable = true },
-				indent = { enable = true },
+			ts.setup({
+				install_dir = vim.fn.stdpath("data") .. "/site",
+			})
+
+			local wanted = {
+				"bash",
+				"c",
+				"go",
+				"gomod",
+				"gosum",
+				"gowork",
+				"html",
+				"lua",
+				"markdown",
+				"markdown_inline",
+				"query",
+				"vim",
+				"vimdoc",
+			}
+			local installed = {}
+			for _, lang in ipairs(ts.get_installed()) do
+				installed[lang] = true
+			end
+			local missing = vim.tbl_filter(function(lang)
+				return not installed[lang]
+			end, wanted)
+			if #missing > 0 then
+				ts.install(missing)
+			end
+
+			vim.api.nvim_create_autocmd("FileType", {
+				group = vim.api.nvim_create_augroup("veya-treesitter-start", { clear = true }),
+				pattern = {
+					"bash",
+					"c",
+					"go",
+					"gomod",
+					"gosum",
+					"gowork",
+					"gleep",
+					"html",
+					"lua",
+					"markdown",
+					"query",
+					"vim",
+					"vimdoc",
+				},
+				callback = function(ev)
+					pcall(vim.treesitter.start, ev.buf)
+				end,
 			})
 		end,
 	},
