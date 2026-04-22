@@ -2,12 +2,26 @@ return {
 	{
 		"neovim/nvim-lspconfig",
 		dependencies = {
-			"williamboman/mason.nvim",
-			"williamboman/mason-lspconfig.nvim",
-			"WhoIsSethDaniel/mason-tool-installer.nvim",
 			{ "j-hui/fidget.nvim", opts = {} },
 		},
 		config = function()
+			local capabilities = vim.lsp.protocol.make_client_capabilities()
+			capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
+
+			local function exe(name)
+				local path = vim.fn.exepath(name)
+				if path ~= "" then
+					return path
+				end
+				return nil
+			end
+
+			local function with_capabilities(config)
+				return vim.tbl_deep_extend("force", {}, config, {
+					capabilities = vim.tbl_deep_extend("force", {}, capabilities, config.capabilities or {}),
+				})
+			end
+
 			vim.api.nvim_create_autocmd("LspAttach", {
 				group = vim.api.nvim_create_augroup("user-lsp-attach", { clear = true }),
 				callback = function(event)
@@ -35,9 +49,7 @@ return {
 					end, "[W]orkspace [S]ymbols")
 
 					map("<leader>rn", vim.lsp.buf.rename, "[R]e[n]ame")
-
 					map("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction")
-
 					map("K", vim.lsp.buf.hover, "Hover Documentation")
 					map("gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
 
@@ -45,6 +57,7 @@ return {
 
 					if client and client:supports_method("textDocument/documentHighlight") then
 						local highlight_augroup = vim.api.nvim_create_augroup("user-lsp-highlight", { clear = false })
+
 						vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
 							buffer = event.buf,
 							group = highlight_augroup,
@@ -61,18 +74,18 @@ return {
 							group = vim.api.nvim_create_augroup("user-lsp-detach", { clear = true }),
 							callback = function(event2)
 								vim.lsp.buf.clear_references()
-								vim.api.nvim_clear_autocmds({ group = "user-lsp-highlight", buffer = event2.buf })
+								vim.api.nvim_clear_autocmds({
+									group = "user-lsp-highlight",
+									buffer = event2.buf,
+								})
 							end,
 						})
 					end
 
 					if client and client:supports_method("textDocument/inlayHint") then
-						pcall(function()
-							vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
-						end)
-
 						vim.keymap.set("n", "<leader>th", function()
-							vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
+							local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf })
+							vim.lsp.inlay_hint.enable(not enabled, { bufnr = event.buf })
 						end, { buffer = event.buf, desc = "[T]oggle Inlay [H]ints" })
 					end
 
@@ -84,22 +97,33 @@ return {
 				end,
 			})
 
-			local capabilities = vim.lsp.protocol.make_client_capabilities()
-			capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
-
 			local servers = {
 				clangd = {
-					cmd = { "clangd", "--header-insertion=iwyu", "--compile-commands-dir=." },
-					root_dir = require("lspconfig.util").root_pattern(".clangd", ".git"),
-					capabilities = {
-						offsetEncoding = "utf-8",
+					cmd = { exe("clangd"), "--header-insertion=iwyu", "--offset-encoding=utf-8" },
+					filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
+					root_markers = {
+						"compile_commands.json",
+						"compile_flags.txt",
+						".clangd",
+						".git",
+						".jj",
 					},
-					on_new_config = function(new_config, new_root_dir)
-						-- Add the include path relative to the project root
-						table.insert(new_config.cmd, "-I" .. new_root_dir .. "/ex00/include")
-					end,
 				},
+
 				lua_ls = {
+					cmd = { exe("lua-language-server") },
+					filetypes = { "lua" },
+					root_markers = {
+						".luarc.json",
+						".luarc.jsonc",
+						".luacheckrc",
+						".stylua.toml",
+						"stylua.toml",
+						"selene.toml",
+						"selene.yml",
+						".git",
+						".jj",
+					},
 					settings = {
 						Lua = {
 							runtime = { version = "LuaJIT" },
@@ -110,16 +134,82 @@ return {
 						},
 					},
 				},
-				powershell_es = {
+
+				yamlls = {
+					cmd = { exe("yaml-language-server"), "--stdio" },
+					filetypes = { "yaml", "yaml.docker-compose", "yaml.gitlab" },
+					root_markers = { ".git", ".jj" },
 					settings = {
-						powershell = {
-							codeFormatting = {
-								Preset = "Stroustrup",
+						yaml = {
+							validate = true,
+							format = { enable = true },
+							hover = true,
+							completion = true,
+							schemaStore = {
+								enable = true,
 							},
 						},
 					},
 				},
+
+				taplo = {
+					cmd = { exe("taplo"), "lsp", "stdio" },
+					filetypes = { "toml" },
+					root_markers = {
+						"taplo.toml",
+						".taplo.toml",
+						"pyproject.toml",
+						"Cargo.toml",
+						".git",
+						".jj",
+					},
+				},
+
+				basedpyright = {
+					cmd = { exe("basedpyright-langserver"), "--stdio" },
+					filetypes = { "python" },
+					root_markers = {
+						"pyproject.toml",
+						"setup.py",
+						"setup.cfg",
+						"requirements.txt",
+						"Pipfile",
+						"pyrightconfig.json",
+						".git",
+						".jj",
+					},
+					settings = {
+						basedpyright = {
+							disableLanguageServices = true,
+							analysis = {
+								diagnosticMode = "openFilesOnly",
+							},
+						},
+					},
+				},
+
+				ty = {
+					cmd = { exe("ty"), "server" },
+					filetypes = { "python" },
+					root_markers = {
+						"pyproject.toml",
+						"setup.py",
+						"setup.cfg",
+						"requirements.txt",
+						".git",
+						".jj",
+					},
+					settings = {
+						ty = {
+							diagnosticMode = "off",
+						},
+					},
+				},
+
 				tinymist = {
+					cmd = { exe("tinymist") },
+					filetypes = { "typst" },
+					root_markers = { "typst.toml", ".git", ".jj" },
 					settings = {
 						tinymist = {
 							lint = {
@@ -128,43 +218,33 @@ return {
 							},
 						},
 					},
-					filetypes = { "typst" },
 				},
+
 				zls = {
-					cmd = { "zls" },
+					cmd = { exe("zls") },
 					filetypes = { "zig", "zir" },
-					root_dir = require("lspconfig.util").root_pattern("zls.json", "build.zig", ".git"),
+					root_markers = { "build.zig", "build.zig.zon", ".git", ".jj" },
 					settings = {
 						zls = {
+							zig_exe_path = exe("zig"),
 							enable_inlay_hints = true,
 							enable_snippets = true,
 							warn_style = true,
-							publish_diagnostics = true,
+							enable_build_on_save = true,
+							build_on_save_step = "check",
 						},
 					},
 				},
 			}
 
-			require("mason").setup()
-
-			local ensure_installed = vim.tbl_keys(servers or {})
-			vim.list_extend(ensure_installed, {
-				"stylua",
-			})
-			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
-
-			require("mason-lspconfig").setup({
-				handlers = {
-					function(server_name)
-						local server = servers[server_name] or {}
-						local opts = vim.tbl_deep_extend("force", {}, server, {
-							capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {}),
-						})
-
-						require("lspconfig")[server_name].setup(opts)
-					end,
-				},
-			})
+			for server_name, server in pairs(servers) do
+				if server.cmd and (not server.cmd[1] or server.cmd[1] == "") then
+					vim.notify("Skipping " .. server_name .. ": missing executable", vim.log.levels.WARN)
+				else
+					vim.lsp.config(server_name, with_capabilities(server))
+					vim.lsp.enable(server_name)
+				end
+			end
 		end,
 	},
 }

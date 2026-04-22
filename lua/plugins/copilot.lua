@@ -1,6 +1,7 @@
 return {
 	{
 		"zbirenbaum/copilot.lua",
+		enabled = false, -- disabled in favour of supermaven
 		cmd = "Copilot",
 		event = "InsertEnter",
 		config = function()

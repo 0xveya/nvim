@@ -56,7 +56,7 @@ return {
 					{ name = "luasnip" },
 					{ name = "path" },
 					{ name = "vim-dadbod-completion" },
-					-- { name = "supermaven" },
+					-- { name = "supermaven" }, -- not used: supermaven runs as inline ghost text
 				},
 			})
 		end,
