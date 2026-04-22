@@ -68,7 +68,7 @@ return {
 		quickfile = { enabled = true },
 		scope = { enabled = true },
 		scroll = { enabled = false },
-		statuscolumn = { enabled = true },
+		statuscolumn = { enabled = false },
 		words = { enabled = true },
 		gitbrowse = { enabled = true },
 		git = { enabled = true },
@@ -248,13 +248,6 @@ return {
 				Snacks.picker.git_diff()
 			end,
 			desc = "Git Diff (Hunks)",
-		},
-		{
-			"<leader>gf",
-			function()
-				Snacks.picker.git_log_file()
-			end,
-			desc = "Git Log File",
 		},
 	},
 }

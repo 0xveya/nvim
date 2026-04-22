@@ -64,7 +64,6 @@ nmap("<C-A-v>", "<cmd>vsplit<CR>")
 
 nmap("<M-j>", "<cmd>cnext<CR>")
 nmap("<M-k>", "<cmd>cprev<CR>")
-nmap("<leader>42", "<cmd>Stdheader<CR>")
 
 xmap("<leader>y", function()
 	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", true)
