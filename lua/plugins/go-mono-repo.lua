@@ -2,6 +2,9 @@ return {
 	"0xveya/go-mono-repo",
 	opts = {
 		persist = true,
+		keymaps = {
+			pick_scope = "<leader>ngl",
+		},
 		override = {
 			enabled = true,
 			files = "<leader>ff",
