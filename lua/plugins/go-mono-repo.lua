@@ -4,6 +4,8 @@ return {
 		persist = true,
 		keymaps = {
 			pick_scope = "<leader>ngl",
+			narrow = "<leader>ngn",
+			clear_narrow = "<leader>ngN",
 		},
 		override = {
 			enabled = true,
