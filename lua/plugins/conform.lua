@@ -39,15 +39,31 @@ return {
 			end,
 			formatters_by_ft = {
 				lua = { "stylua" },
+				python = function(bufnr)
+					if in_active_dirs(bufnr) then
+						return {
+							"ruff_format_42",
+						}
+					end
+					return { "ruff_format" }
+				end,
 				powershell = { "ps_formatter" },
 				go = { "goimports" },
+
 				c = function(bufnr)
-					return in_active_dirs(bufnr) and { "c_formatter_42" } or {}
+					if in_active_dirs(bufnr) then
+						return { "c_formatter_42" }
+					end
+					return { "clang-format" }
 				end,
 
 				cpp = function(bufnr)
-					return in_active_dirs(bufnr) and { "c_formatter_42" } or {}
+					if in_active_dirs(bufnr) then
+						return { "c_formatter_42" }
+					end
+					return { "clang-format" }
 				end,
+
 				sql = { "sleek" },
 			},
 			formatters = {
@@ -57,6 +73,17 @@ return {
 				},
 				c_formatter_42 = {
 					command = "c_formatter_42",
+					stdin = true,
+				},
+				ruff_format = {
+					command = "ruff",
+					args = { "format", "-" },
+					stdin = true,
+				},
+
+				ruff_format_42 = {
+					command = "ruff",
+					args = { "format", "--config", vim.fn.expand("~/.config/ruff/pyproject-42.toml"), "-" },
 					stdin = true,
 				},
 			},

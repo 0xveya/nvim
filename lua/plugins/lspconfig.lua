@@ -6,6 +6,7 @@ return {
 		},
 		config = function()
 			local capabilities = vim.lsp.protocol.make_client_capabilities()
+			capabilities.textDocument.completion.completionItem.snippetSupport = true
 			capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
 
 			local function exe(name)
@@ -55,6 +56,10 @@ return {
 
 					local client = vim.lsp.get_client_by_id(event.data.client_id)
 
+					if client and client.name == "basedpyright" then
+						client.server_capabilities.inlayHintProvider = nil
+					end
+
 					if client and client:supports_method("textDocument/documentHighlight") then
 						local highlight_augroup = vim.api.nvim_create_augroup("user-lsp-highlight", { clear = false })
 
@@ -83,6 +88,7 @@ return {
 					end
 
 					if client and client:supports_method("textDocument/inlayHint") then
+						vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
 						vim.keymap.set("n", "<leader>th", function()
 							local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf })
 							vim.lsp.inlay_hint.enable(not enabled, { bufnr = event.buf })
@@ -107,6 +113,15 @@ return {
 						".clangd",
 						".git",
 						".jj",
+					},
+					init_options = {
+						useBearingHints = true,
+						inlayHints = {
+							Designators = true,
+							Enabled = true,
+							ParameterNames = true,
+							DeducedTypes = true,
+						},
 					},
 				},
 
@@ -233,6 +248,33 @@ return {
 							enable_build_on_save = true,
 							build_on_save_step = "check",
 						},
+					},
+				},
+				ts_ls = {
+					cmd = { exe("typescript-language-server"), "--stdio" },
+					filetypes = { "javascript", "typescript" },
+					root_markers = { "package.json", "tsconfig.json", ".git", ".jj" },
+				},
+				html = {
+					cmd = { exe("vscode-html-language-server"), "--stdio" },
+					filetypes = { "html" },
+					root_markers = { "package.json", ".git", ".jj" },
+					init_options = {
+						configurationSection = { "html", "css", "javascript" },
+						embeddedLanguages = {
+							css = true,
+							javascript = true,
+						},
+					},
+				},
+				cssls = {
+					cmd = { exe("vscode-css-language-server"), "--stdio" },
+					filetypes = { "css", "scss", "less" },
+					root_markers = { "package.json", ".git", ".jj" },
+					settings = {
+						css = { validate = true },
+						less = { validate = true },
+						scss = { validate = true },
 					},
 				},
 			}

@@ -1,6 +1,7 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 vim.opt.winborder = "rounded"
+vim.env.LUASNIP_OVERRIDE_LOGPATH = "/tmp"
 
 require("options")
 
@@ -84,3 +85,31 @@ vim.g.omni_sql_no_default_maps = 1
 vim.opt.sessionoptions =
 	{ "buffers", "curdir", "tabpages", "winsize", "help", "globals", "skiprtp", "folds", "localoptions" }
 vim.env.PATH = vim.env.HOME .. "/.local/share/mise/shims:" .. vim.env.PATH
+
+local gns3util_root = vim.fs.normalize(vim.fn.expand("~/coding/gns3util"))
+
+local old_handler = vim.lsp.handlers["textDocument/publishDiagnostics"]
+
+vim.lsp.handlers["textDocument/publishDiagnostics"] = function(err, result, ctx, config)
+	if result and result.uri then
+		local path = vim.fs.normalize(vim.uri_to_fname(result.uri))
+
+		if vim.startswith(path, gns3util_root) and result.diagnostics then
+			result.diagnostics = vim.tbl_filter(function(d)
+				return not (
+					d.message
+					and d.message:match("comment on exported")
+					and d.message:match("should be of the form")
+				)
+			end, result.diagnostics)
+		end
+	end
+
+	return old_handler(err, result, ctx, config)
+end
+
+vim.filetype.add({
+	extension = {
+		sh = "bash",
+	},
+})

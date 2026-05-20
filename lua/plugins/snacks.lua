@@ -30,11 +30,29 @@ return {
 			},
 		},
 		explorer = { enabled = false },
+		image = {
+			enabled = true,
+			doc = {
+				enabled = false,
+				inline = false,
+				float = false,
+			},
+			math = {
+				enabled = false,
+			},
+		},
 		indent = { enabled = true },
 		input = { enabled = true },
 		picker = {
 			enabled = true,
 			ui_select = true,
+			win = {
+				preview = {
+					wo = {
+						conceallevel = 0,
+					},
+				},
+			},
 			sources = {
 				files = {
 					exclude = {
@@ -47,6 +65,7 @@ return {
 						".zig-cache",
 						"zig-out",
 						"target",
+						".venv",
 					},
 				},
 				grep = {
@@ -60,6 +79,7 @@ return {
 						".zig-cache",
 						"zig-out",
 						"target",
+						".venv",
 					},
 				},
 			},

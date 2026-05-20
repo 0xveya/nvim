@@ -4,7 +4,6 @@ return {
 		dependencies = {
 			"ray-x/guihua.lua",
 			"neovim/nvim-lspconfig",
-			"nvim-treesitter/nvim-treesitter",
 		},
 		ft = { "go", "gomod" },
 		build = ':lua require("go.install").update_all_sync()',
@@ -28,11 +27,16 @@ return {
 					},
 				},
 			},
+			golangci_lint = {
+				default = "standard",
+				extra_args = { "--config", ".golangci.yml" },
+			},
 			goimports = "gopls",
 			gofmt = "gofumpt",
 			lsp_gofumpt = true,
 			lsp_on_attach = true,
 			dap_debug = true,
+			textobjects = false,
 		},
 		config = function(_, opts)
 			require("go").setup(opts)

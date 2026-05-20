@@ -18,6 +18,9 @@ return {
 		vim.api.nvim_create_autocmd("VimEnter", {
 			nested = true,
 			callback = function()
+				if vim.g.jj_diffedit == 1 then
+					return
+				end
 				local arg = vim.fn.argv(0)
 				if vim.fn.argc() == 0 or (vim.fn.argc() == 1 and vim.fn.isdirectory(arg) == 1) then
 					require("persistence").load()

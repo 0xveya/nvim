@@ -33,7 +33,7 @@ return {
 				suggestion_color = "#888888",
 				cterm = 244,
 			},
-			log_level = "warn",
+			log_level = "off",
 			disable_inline_completion = false,
 			disable_keymaps = false,
 		})
