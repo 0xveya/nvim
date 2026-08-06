@@ -5,6 +5,7 @@ return {
 		config = function()
 			require("tree-sitter-manager").setup({
 				ensure_installed = {
+					"astro",
 					"bash",
 					"c",
 					"css",

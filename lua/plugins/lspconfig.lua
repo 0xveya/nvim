@@ -60,6 +60,13 @@ return {
 						client.server_capabilities.inlayHintProvider = nil
 					end
 
+					-- if client and client.name == "ty" then
+					-- 	-- ty is used for inlay hints only. Clear diagnostics left by
+					-- 	-- older sessions/configurations from both push and pull channels.
+					-- 	vim.diagnostic.reset(vim.lsp.diagnostic.get_namespace(client.id, false), event.buf)
+					-- 	vim.diagnostic.reset(vim.lsp.diagnostic.get_namespace(client.id, true), event.buf)
+					-- end
+
 					if client and client:supports_method("textDocument/documentHighlight") then
 						local highlight_augroup = vim.api.nvim_create_augroup("user-lsp-highlight", { clear = false })
 
@@ -103,7 +110,16 @@ return {
 				end,
 			})
 
+			local tsserver = vim.fn.resolve(vim.fn.exepath("tsserver"))
+			local global_tsdk = tsserver ~= "" and vim.fs.joinpath(vim.fs.dirname(vim.fs.dirname(tsserver)), "lib")
+				or nil
+
 			local servers = {
+				astro = {
+					init_options = {
+						typescript = { tsdk = global_tsdk },
+					},
+				},
 				clangd = {
 					cmd = { exe("clangd"), "--header-insertion=iwyu", "--offset-encoding=utf-8" },
 					filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
@@ -195,9 +211,24 @@ return {
 					},
 					settings = {
 						basedpyright = {
+							-- Diagnostics/type checking only.
 							disableLanguageServices = true,
 							analysis = {
-								diagnosticMode = "openFilesOnly",
+								diagnosticMode = "workspace",
+								typeCheckingMode = "strict",
+								autoSearchPaths = true,
+								useLibraryCodeForTypes = true,
+								diagnosticSeverityOverrides = {
+									reportAny = "none",
+									reportUnknownArgumentType = "error",
+									reportUnknownLambdaType = "warning",
+									reportUnknownMemberType = "error",
+									reportUnknownParameterType = "error",
+									reportUnknownVariableType = "error",
+									reportUnnecessaryCast = "error",
+									reportMatchNotExhaustive = "error",
+									reportUnusedCallResult = "error",
+								},
 							},
 						},
 					},
@@ -220,6 +251,68 @@ return {
 						},
 					},
 				},
+				-- basedpyright = {
+				-- 	cmd = { exe("basedpyright-langserver"), "--stdio" },
+				-- 	filetypes = { "python" },
+				-- 	root_markers = {
+				-- 		"pyproject.toml",
+				-- 		"setup.py",
+				-- 		"setup.cfg",
+				-- 		"requirements.txt",
+				-- 		"Pipfile",
+				-- 		"pyrightconfig.json",
+				-- 		".git",
+				-- 		".jj",
+				-- 	},
+				-- 	settings = {
+				-- 		basedpyright = {
+				-- 			disableLanguageServices = false,
+				-- 			analysis = {
+				-- 				diagnosticMode = "workspace",
+				-- 				typeCheckingMode = "strict",
+				-- 				autoSearchPaths = true,
+				-- 				autoImportCompletions = true,
+				-- 				useLibraryCodeForTypes = true,
+				-- 				diagnosticSeverityOverrides = {
+				-- 					reportAny = "none",
+				-- 					reportUnknownArgumentType = "error",
+				-- 					reportUnknownLambdaType = "warning",
+				-- 					reportUnknownMemberType = "error",
+				-- 					reportUnknownParameterType = "error",
+				-- 					reportUnknownVariableType = "error",
+				-- 					reportUnnecessaryCast = "error",
+				-- 					reportMatchNotExhaustive = "error",
+				-- 					reportUnusedCallResult = "error",
+				-- 				},
+				-- 			},
+				-- 		},
+				-- 	},
+				-- },
+				--
+				-- ty = {
+				-- 	cmd = { exe("ty"), "server" },
+				-- 	filetypes = { "python" },
+				-- 	root_markers = {
+				-- 		"pyproject.toml",
+				-- 		"setup.py",
+				-- 		"setup.cfg",
+				-- 		"requirements.txt",
+				-- 		".git",
+				-- 		".jj",
+				-- 	},
+				-- 	settings = {
+				-- 		ty = {
+				-- 			diagnosticMode = "openFilesOnly",
+				-- 		},
+				-- 	},
+				-- 	handlers = {
+				-- 		-- Keep ty's inlay hints and navigation, but let basedpyright
+				-- 		-- be the only server that displays diagnostics.
+				-- 		["textDocument/publishDiagnostics"] = function() end,
+				-- 		["textDocument/diagnostic"] = function() end,
+				-- 		["workspace/diagnostic"] = function() end,
+				-- 	},
+				-- },
 
 				tinymist = {
 					cmd = { exe("tinymist") },
@@ -251,9 +344,25 @@ return {
 					},
 				},
 				ts_ls = {
-					cmd = { exe("typescript-language-server"), "--stdio" },
-					filetypes = { "javascript", "typescript" },
+					cmd = { "typescript-language-server", "--stdio" },
+					filetypes = {
+						"javascript",
+						"javascriptreact",
+						"typescript",
+						"typescriptreact",
+					},
 					root_markers = { "package.json", "tsconfig.json", ".git", ".jj" },
+				},
+				svelte = {
+					cmd = { "svelteserver", "--stdio" },
+					filetypes = { "svelte" },
+					root_markers = {
+						"svelte.config.js",
+						"svelte.config.ts",
+						"package.json",
+						".git",
+						".jj",
+					},
 				},
 				html = {
 					cmd = { exe("vscode-html-language-server"), "--stdio" },

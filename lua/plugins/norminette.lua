@@ -23,7 +23,7 @@ return {
 
 			auto_42_header = true,
 			update_42_header = true,
-			auto_header_guard = false,
+			auto_header_guard = true,
 			header_keybinding = "<leader>42",
 			header_style_enabled = true,
 			header_style_keybinding = "<leader>4h",
@@ -49,17 +49,25 @@ return {
 			end,
 			line_saver_diagnostics = true,
 
-			auto_makefile = false,
+			auto_makefile = true,
 			makefile_keybinding = "<leader>cm",
 			project_type = "auto",
-			python_scaffold = "full",
 			python_dirs = { "*python*", "*py*" },
 			c_dirs = {},
 			python_version = "3.10",
-			python_main = "main.py",
 			python_package = nil,
-			python_formatter = "ruff",
-			python_typechecker = "ty",
+			python_setup = {
+				script = "~/coding/never-hire-me-for-python/templates/setup_project.py",
+				test_file = "~/coding/never-hire-me-for-python/skills/py42-setup/resources/test_cli_fw.py",
+				max_line_len = 100,
+				toolchain = "uv",
+				checks = { "mypy", "ruff", "pytest" },
+			},
+			norm_exclude_dirs = {
+				"~/coding/42/cc/fly-in",
+			},
+			-- Keep source syncing explicit via :Makesync; background syncing can
+			-- rewrite a hand-maintained Makefile whenever a C file is saved.
 			auto_sync_makefile = false,
 			makesync_keybinding = "<leader>cu",
 			makefile_exclude_dirs = { ".git", ".jj", "tests", "test", "build", "libft", "libprintf", ".venv" },
@@ -86,6 +94,7 @@ return {
 
 			active_dirs = {
 				"~/coding/42",
+				"~/Downloads/minishell",
 			},
 		},
 	},

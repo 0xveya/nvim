@@ -26,6 +26,14 @@ local function in_active_dirs(bufnr)
 	return false
 end
 
+local prettier_executable = vim.fn.resolve(vim.fn.exepath("prettier"))
+local prettier_node_modules = prettier_executable ~= ""
+		and vim.fs.dirname(vim.fs.dirname(vim.fs.dirname(prettier_executable)))
+	or nil
+local prettier_astro_plugin = prettier_node_modules
+		and vim.fs.joinpath(prettier_node_modules, "prettier-plugin-astro", "dist", "index.js")
+	or "prettier-plugin-astro"
+
 return {
 	{
 		"stevearc/conform.nvim",
@@ -39,6 +47,17 @@ return {
 			end,
 			formatters_by_ft = {
 				lua = { "stylua" },
+				astro = { "prettier_astro" },
+				css = { "prettier" },
+				scss = { "prettier" },
+				less = { "prettier" },
+				html = { "prettier" },
+				javascript = { "prettier" },
+				javascriptreact = { "prettier" },
+				typescript = { "prettier" },
+				typescriptreact = { "prettier" },
+				json = { "prettier" },
+				jsonc = { "prettier" },
 				python = function(bufnr)
 					if in_active_dirs(bufnr) then
 						return {
@@ -67,6 +86,15 @@ return {
 				sql = { "sleek" },
 			},
 			formatters = {
+				prettier_astro = {
+					command = "prettier",
+					args = {
+						"--plugin=" .. prettier_astro_plugin,
+						"--stdin-filepath",
+						"$FILENAME",
+					},
+					stdin = true,
+				},
 				ps_formatter = {
 					command = "ps-formatter",
 					stdin = true,
