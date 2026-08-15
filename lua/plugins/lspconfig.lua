@@ -386,6 +386,11 @@ return {
 						scss = { validate = true },
 					},
 				},
+				gleam = {
+					cmd = { exe("gleam"), "lsp" },
+					filetypes = { "gleam" },
+					root_markers = { "gleam.toml", ".git", ".jj" },
+				},
 			}
 
 			for server_name, server in pairs(servers) do

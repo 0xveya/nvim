@@ -35,6 +35,8 @@ return {
 				logo_42 = { start = "#eb6f92", end_ = "#31748f" },
 			},
 			guard_keybinding = "<leader>ch",
+			-- Keep include order under your control: readline may need to precede stdio.
+			auto_sort_includes = false,
 			auto_sort_prototypes = true,
 			line_count_enabled = false,
 			header_line_number_offset = true,

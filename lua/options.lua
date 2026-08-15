@@ -61,7 +61,15 @@ vim.g.vimtex_quickfix_ignore_filters = {
 	"geometry Warning",
 }
 
-vim.g.user42 = "flaltens"
-vim.g.mail42 = "flaltens@student.42vienna.com"
+local minishell_dir = vim.fs.normalize(vim.fn.expand("~/Downloads/minishell"))
+local current_dir = vim.fs.normalize(vim.fn.getcwd())
+
+if current_dir == minishell_dir or vim.startswith(current_dir, minishell_dir .. "/") then
+	vim.g.user42 = "flaltens"
+	vim.g.mail42 = "flaltens@student.42vienna.com"
+else
+	vim.g.user42 = "sfurst"
+	vim.g.mail42 = "sfurst@student.42vienna.com"
+end
 
 -- vim: ts=2 sts=2 sw=2 et
