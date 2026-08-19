@@ -55,6 +55,9 @@ return {
 
 				c = function(bufnr)
 					if in_42_dir(bufnr) then
+						if vim.api.nvim_buf_get_name(bufnr):sub(-2) == ".h" then
+							return { "c_formatter_42" }
+						end
 						return {
 							"clang-format",
 							"norm42_fix",
@@ -63,7 +66,12 @@ return {
 					return { "clang-format" }
 				end,
 
-				cpp = { "clang-format" },
+				cpp = function(bufnr)
+					if in_42_dir(bufnr) and vim.api.nvim_buf_get_name(bufnr):sub(-2) == ".h" then
+						return { "c_formatter_42" }
+					end
+					return { "clang-format" }
+				end,
 
 				go = { "goimports" },
 				powershell = { "ps_formatter" },
@@ -71,6 +79,10 @@ return {
 			},
 
 			formatters = {
+				c_formatter_42 = {
+					command = "c_formatter_42",
+					stdin = true,
+				},
 				norm42_fix = {
 					command = "python3",
 					args = {
@@ -377,7 +389,7 @@ INITIALIZED_LOCAL = re.compile(
         r')'
     r')'
     r'[ \t]+'
-    r'(?P<ptr>\**)' 
+    r'(?P<ptr>\**)'
     r'(?P<name>[A-Za-z_][A-Za-z0-9_]*)'
     r'\s*=\s*'
     r'(?P<value>.+);$'
@@ -457,7 +469,7 @@ while i < len(lines):
 lines = out
 
 
-# Local declarations only.
+# Align top-level local declaration blocks.
 LOCAL_DECL = re.compile(
     r'^\t'
     r'(?P<type>'
@@ -481,32 +493,64 @@ LOCAL_DECL = re.compile(
             r'|signed(?:\s+(?:char|short|int|long))?'
         r')'
     r')'
-    r'[ ]+'
+    r'[ \t]+'
     r'(?P<ptr>\**)'
     r'(?P<name>[A-Za-z_][A-Za-z0-9_]*)'
     r'(?P<rest>\s*(?:;|=|\[).*)$'
 )
 
-for i, line in enumerate(lines):
-    if not line.startswith("\t"):
+
+def decl_prefix_width(type_name):
+    return width("\t" + type_name)
+
+
+i = 0
+
+while i < len(lines):
+    if (
+        not lines[i].startswith("\t")
+        or lines[i].startswith("\t\t")
+        or not LOCAL_DECL.match(lines[i])
+    ):
+        i += 1
         continue
 
-    if line.startswith("\t\t"):
-        continue
+    start = i
+    decls = []
 
-    m = LOCAL_DECL.match(line)
+    while i < len(lines):
+        if (
+            not lines[i].startswith("\t")
+            or lines[i].startswith("\t\t")
+        ):
+            break
 
-    if not m:
-        continue
+        m = LOCAL_DECL.match(lines[i])
 
-    lines[i] = (
-        "\t"
-        + m.group("type")
-        + "\t"
-        + m.group("ptr")
-        + m.group("name")
-        + m.group("rest")
+        if not m:
+            break
+
+        decls.append(m)
+        i += 1
+
+    max_type = max(
+        decl_prefix_width(m.group("type"))
+        for m in decls
     )
+    target = ((max_type // 4) + 1) * 4
+
+    for off, m in enumerate(decls):
+        prefix = "\t" + m.group("type")
+
+        while width(prefix) < target:
+            prefix += "\t"
+
+        lines[start + off] = (
+            prefix
+            + m.group("ptr")
+            + m.group("name")
+            + m.group("rest")
+        )
 
 
 # Concatenated string literals.
@@ -540,7 +584,7 @@ sys.stdout.write(
     "\n".join(lines)
     + ("\n" if had_newline else "")
 )
-		]],
+	]],
 					},
 					stdin = true,
 				},
