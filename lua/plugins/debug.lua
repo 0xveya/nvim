@@ -1,16 +1,22 @@
 return {
 	"mfussenegger/nvim-dap",
+
 	dependencies = {
 		"rcarriga/nvim-dap-ui",
 		"nvim-neotest/nvim-nio",
-		"leoluz/nvim-dap-go",
 	},
+
 	config = function()
 		local dap = require("dap")
 		local dapui = require("dapui")
 
 		dapui.setup({
-			icons = { expanded = "▾", collapsed = "▸", current_frame = "*" },
+			icons = {
+				expanded = "▾",
+				collapsed = "▸",
+				current_frame = "*",
+			},
+
 			controls = {
 				icons = {
 					pause = "⏸",
@@ -24,14 +30,22 @@ return {
 					disconnect = "⏏",
 				},
 			},
+
 			layouts = {
 				{
-					elements = { "scopes", "breakpoints", "stacks", "watches" },
+					elements = {
+						"scopes",
+						"breakpoints",
+						"stacks",
+						"watches",
+					},
 					size = 40,
 					position = "left",
 				},
 				{
-					elements = { "repl" },
+					elements = {
+						"repl",
+					},
 					size = 10,
 					position = "bottom",
 				},
@@ -43,107 +57,128 @@ return {
 				dapui.open({ reset = true })
 			end, 50)
 		end
+
 		dap.listeners.before.event_terminated["dapui_config"] = function()
 			dapui.close()
 		end
+
 		dap.listeners.before.event_exited["dapui_config"] = function()
 			dapui.close()
 		end
 
-		-- Basic debugging keymaps
-		vim.keymap.set("n", "<F5>", dap.continue, { desc = "Debug: Start/Continue" })
-		vim.keymap.set("n", "<F1>", dap.step_into, { desc = "Debug: Step Into" })
-		vim.keymap.set("n", "<F2>", dap.step_over, { desc = "Debug: Step Over" })
-		vim.keymap.set("n", "<F3>", dap.step_out, { desc = "Debug: Step Out" })
-		vim.keymap.set("n", "<F9>", dapui.toggle, { desc = "Debug: Toggle UI" })
-		vim.keymap.set("n", "<leader>b", dap.toggle_breakpoint, { desc = "Debug: Toggle Breakpoint" })
-		vim.keymap.set("n", "<leader>B", function()
-			dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
-		end, { desc = "Debug: Set Breakpoint" })
-
-		local function shellwords(str)
-			local args, i, n = {}, 1, #str
-			while i <= n do
-				while i <= n and str:sub(i, i):match("%s") do
-					i = i + 1
-				end
-				if i > n then
-					break
-				end
-				local c = str:sub(i, i)
-				local quote = (c == '"' or c == "'") and c or nil
-				local arg = ""
-				if quote then
-					i = i + 1
-					while i <= n do
-						local ch = str:sub(i, i)
-						if ch == "\\" and quote == '"' and i < n then
-							i = i + 1
-							ch = str:sub(i, i)
-							arg = arg .. ch
-							i = i + 1
-						elseif ch == quote then
-							i = i + 1
-							break
-						else
-							arg = arg .. ch
-							i = i + 1
-						end
-					end
-				else
-					while i <= n and not str:sub(i, i):match("%s") do
-						arg = arg .. str:sub(i, i)
-						i = i + 1
-					end
-				end
-				table.insert(args, arg)
-			end
-			return args
-		end
-
-		require("dap-go").setup({
-			delve = {
-				path = vim.fn.exepath("dlv"),
-				detached = false,
-			},
+		vim.keymap.set("n", "<F5>", dap.continue, {
+			desc = "Debug: Start / Continue",
 		})
 
-		dap.configurations.go = {
-			{
-				type = "go",
-				name = "Debug (module root)",
-				request = "launch",
-				mode = "debug",
-				program = "${workspaceFolder}",
-				cwd = "${workspaceFolder}",
-				console = "integratedTerminal",
+		vim.keymap.set("n", "<F1>", dap.step_into, {
+			desc = "Debug: Step Into",
+		})
+
+		vim.keymap.set("n", "<F2>", dap.step_over, {
+			desc = "Debug: Step Over",
+		})
+
+		vim.keymap.set("n", "<F3>", dap.step_out, {
+			desc = "Debug: Step Out",
+		})
+
+		vim.keymap.set("n", "<F9>", dapui.toggle, {
+			desc = "Debug: Toggle UI",
+		})
+
+		vim.keymap.set("n", "<leader>b", dap.toggle_breakpoint, {
+			desc = "Debug: Toggle Breakpoint",
+		})
+
+		vim.keymap.set("n", "<leader>B", function()
+			dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
+		end, {
+			desc = "Debug: Conditional Breakpoint",
+		})
+
+		vim.keymap.set("n", "<leader>dr", dap.repl.open, {
+			desc = "Debug: Open REPL",
+		})
+
+		vim.keymap.set("n", "<leader>dt", dap.terminate, {
+			desc = "Debug: Terminate",
+		})
+
+		vim.keymap.set("n", "<leader>dl", dap.run_last, {
+			desc = "Debug: Run Last",
+		})
+
+		local codelldb = vim.fn.exepath("codelldb")
+
+		if codelldb == "" then
+			vim.notify("codelldb not found in PATH", vim.log.levels.ERROR)
+			return
+		end
+
+		dap.adapters.codelldb = {
+			type = "server",
+			port = "${port}",
+			executable = {
+				command = codelldb,
+				args = {
+					"--port",
+					"${port}",
+				},
 			},
+		}
+
+		dap.configurations.c = {
 			{
-				type = "go",
-				name = "Debug (module root) with args",
+				name = "Debug minishell",
+				type = "codelldb",
 				request = "launch",
-				mode = "debug",
-				program = "${workspaceFolder}",
+				program = "${workspaceFolder}/minishell",
 				cwd = "${workspaceFolder}",
-				console = "integratedTerminal",
-				args = function()
-					local input = vim.fn.input("Args: ")
-					return shellwords(input)
+				stopOnEntry = false,
+				terminal = "external",
+			},
+
+			{
+				name = "Debug arbitrary executable",
+				type = "codelldb",
+				request = "launch",
+
+				program = function()
+					return vim.fn.input("Executable: ", vim.fn.getcwd() .. "/", "file")
 				end,
+
+				cwd = "${workspaceFolder}",
+				stopOnEntry = false,
+				terminal = "external",
 			},
+
 			{
-				type = "go",
-				name = "Debug (current dir) with args",
+				name = "Debug arbitrary executable with args",
+				type = "codelldb",
 				request = "launch",
-				mode = "debug",
-				program = ".",
-				cwd = "${fileDirname}",
-				console = "integratedTerminal",
+
+				program = function()
+					return vim.fn.input("Executable: ", vim.fn.getcwd() .. "/", "file")
+				end,
+
+				cwd = "${workspaceFolder}",
+				stopOnEntry = false,
+				terminal = "external",
+
 				args = function()
 					local input = vim.fn.input("Args: ")
-					return shellwords(input)
+
+					if input == "" then
+						return nil
+					end
+
+					return vim.split(input, " ", {
+						trimempty = true,
+					})
 				end,
 			},
 		}
+
+		dap.configurations.cpp = dap.configurations.c
 	end,
 }

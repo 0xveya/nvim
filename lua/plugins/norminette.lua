@@ -1,7 +1,7 @@
 return {
 	{
 		"0xveya/dogshitnorm.nvim",
-		dir = "/home/veya/coding/dogshitnorm",
+		--dir = "/home/veya/coding/dogshitnorm",
 		ft = { "c", "cpp", "make", "python" },
 		cmd = {
 			"Makegen",
@@ -38,7 +38,7 @@ return {
 			-- Keep include order under your control: readline may need to precede stdio.
 			auto_sort_includes = false,
 			auto_sort_prototypes = true,
-			line_count_enabled = false,
+			line_count_enabled = true,
 			header_line_number_offset = true,
 			header_hide_enabled = false,
 			line_count_keybinding = "<leader>Fc",
