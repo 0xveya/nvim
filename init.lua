@@ -19,7 +19,18 @@ require("mistral_fix").setup({
 
 vim.o.autowriteall = true
 
+local function ApplyHighlights()
+	vim.api.nvim_set_hl(0, "@function", { fg = "#ebbcba" })
+	vim.api.nvim_set_hl(0, "@constant.macro", { fg = "#d47a9f" })
+	vim.api.nvim_set_hl(0, "@function.macro", { fg = "#d47a9f" })
+end
+
 vim.cmd([[colorscheme rose-pine]])
+ApplyHighlights()
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+	callback = ApplyHighlights,
+})
 
 local function CleanShaDaTmp()
 	local shada_dir = vim.fn.stdpath("state") .. "/shada"
