@@ -32,9 +32,7 @@ local visible_files = new_visible_files_cache()
 return {
 	{
 		"stevearc/oil.nvim",
-		dependencies = {
-			"nvim-tree/nvim-web-devicons",
-		},
+		dependencies = { "echasnovski/mini.nvim" },
 		config = function(_, opts)
 			local refresh = require("oil.actions").refresh
 			local refresh_callback = refresh.callback

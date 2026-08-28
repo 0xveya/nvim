@@ -136,6 +136,20 @@ return {
 			desc = "[S]earch [S]elect Picker",
 		},
 		{
+			"<leader><leader>i",
+			function()
+				Snacks.picker.icons()
+			end,
+			desc = "Insert Icon",
+		},
+		{
+			"<leader><leader>y",
+			function()
+				Snacks.picker.icons({ confirm = { action = "yank" } })
+			end,
+			desc = "Yank Icon",
+		},
+		{
 			"<leader>sw",
 			function()
 				Snacks.picker.grep_word({ args = picker_args() })

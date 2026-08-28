@@ -45,13 +45,6 @@ nmap("<C-k>", "<C-w><C-k>", "Move focus to the upper window")
 nmap("<C-d>", "<C-d>zz")
 nmap("<C-u>", "<C-u>zz")
 
-nmap("<leader>r", "<cmd>RunCode<CR>", nil, { silent = false })
-nmap("<leader>rf", "<cmd>RunFile<CR>", nil, { silent = false })
-nmap("<leader>rft", "<cmd>RunFile tab<CR>", nil, { silent = false })
-nmap("<leader>rp", "<cmd>RunProject<CR>", nil, { silent = false })
-nmap("<leader>rc", "<cmd>RunClose<CR>", nil, { silent = false })
-nmap("<leader>crf", "<cmd>CRFiletype<CR>", nil, { silent = false })
-nmap("<leader>crp", "<cmd>CRProjects<CR>", nil, { silent = false })
 vim.api.nvim_create_user_command("W", "w", {})
 nmap("<leader>ri", "<cmd>wa<CR><cmd>!uv pip install -e .<CR>", "Install editable package")
 

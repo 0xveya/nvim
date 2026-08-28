@@ -12,4 +12,3 @@ return {
 		{ "<leader>hs", "<cmd>lua require('harpoon.ui').toggle_quick_menu()<cr>", desc = "Show harpoon marks" },
 	},
 }
-

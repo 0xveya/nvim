@@ -56,8 +56,7 @@ return {
 		})
 
 		local function supermaven_patch_status()
-			local listener = vim.fn.stdpath("data")
-				.. "/lazy/supermaven-nvim/lua/supermaven-nvim/document_listener.lua"
+			local listener = vim.fn.stdpath("data") .. "/lazy/supermaven-nvim/lua/supermaven-nvim/document_listener.lua"
 			if vim.fn.filereadable(listener) == 0 then
 				return "patch: plugin file not found"
 			end

@@ -1,7 +1,6 @@
 return {
 	{
 		"0xveya/dogshitnorm.nvim",
-		--dir = "/home/veya/coding/dogshitnorm",
 		ft = { "c", "cpp", "make", "python" },
 		cmd = {
 			"Makegen",
