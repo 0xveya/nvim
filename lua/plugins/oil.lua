@@ -40,6 +40,12 @@ return {
 				visible_files = new_visible_files_cache()
 				refresh_callback(...)
 			end
+			vim.api.nvim_create_autocmd("User", {
+				pattern = "OilActionsPost",
+				callback = function()
+					visible_files = new_visible_files_cache()
+				end,
+			})
 			require("oil").setup(opts)
 		end,
 		opts = {
