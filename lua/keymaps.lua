@@ -26,8 +26,12 @@ nmap("<Esc>", "<cmd>nohlsearch<CR>")
 
 nmap("<leader>pv", vim.cmd.Oil)
 
-nmap("[d", vim.diagnostic.goto_prev, "Go to previous [D]iagnostic message")
-nmap("]d", vim.diagnostic.goto_next, "Go to next [D]iagnostic message")
+nmap("[d", function()
+	vim.diagnostic.jump({ count = -1, float = true })
+end, "Go to previous [D]iagnostic message")
+nmap("]d", function()
+	vim.diagnostic.jump({ count = 1, float = true })
+end, "Go to next [D]iagnostic message")
 nmap("<leader>e", vim.diagnostic.open_float, "Show diagnostic [E]rror messages")
 nmap("<leader>q", vim.diagnostic.setloclist, "Open diagnostic [Q]uickfix list")
 
@@ -40,14 +44,6 @@ nmap("<C-k>", "<C-w><C-k>", "Move focus to the upper window")
 
 nmap("<C-d>", "<C-d>zz")
 nmap("<C-u>", "<C-u>zz")
-
-vim.api.nvim_create_autocmd("TextYankPost", {
-	desc = "Highlight when yanking (copying) text",
-	group = vim.api.nvim_create_augroup("user-highlight-yank", { clear = true }),
-	callback = function()
-		vim.hl.on_yank()
-	end,
-})
 
 nmap("<leader>r", "<cmd>RunCode<CR>", nil, { silent = false })
 nmap("<leader>rf", "<cmd>RunFile<CR>", nil, { silent = false })

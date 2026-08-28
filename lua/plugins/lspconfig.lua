@@ -1,13 +1,9 @@
 return {
 	{
 		"neovim/nvim-lspconfig",
-		dependencies = {
-			{ "j-hui/fidget.nvim", opts = {} },
-		},
+		dependencies = { { "j-hui/fidget.nvim", opts = {} } },
 		config = function()
-			local capabilities = vim.lsp.protocol.make_client_capabilities()
-			capabilities.textDocument.completion.completionItem.snippetSupport = true
-			capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
+			local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 			local function exe(name)
 				local path = vim.fn.exepath(name)
@@ -15,12 +11,6 @@ return {
 					return path
 				end
 				return nil
-			end
-
-			local function with_capabilities(config)
-				return vim.tbl_deep_extend("force", {}, config, {
-					capabilities = vim.tbl_deep_extend("force", {}, capabilities, config.capabilities or {}),
-				})
 			end
 
 			vim.api.nvim_create_autocmd("LspAttach", {
@@ -55,20 +45,13 @@ return {
 					map("gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
 
 					local client = vim.lsp.get_client_by_id(event.data.client_id)
-
-					if client and client.name == "basedpyright" then
-						client.server_capabilities.inlayHintProvider = nil
+					if not client then
+						return
 					end
 
-					-- if client and client.name == "ty" then
-					-- 	-- ty is used for inlay hints only. Clear diagnostics left by
-					-- 	-- older sessions/configurations from both push and pull channels.
-					-- 	vim.diagnostic.reset(vim.lsp.diagnostic.get_namespace(client.id, false), event.buf)
-					-- 	vim.diagnostic.reset(vim.lsp.diagnostic.get_namespace(client.id, true), event.buf)
-					-- end
-
-					if client and client:supports_method("textDocument/documentHighlight") then
-						local highlight_augroup = vim.api.nvim_create_augroup("user-lsp-highlight", { clear = false })
+					if client:supports_method("textDocument/documentHighlight") then
+						local highlight_augroup =
+							vim.api.nvim_create_augroup("user-lsp-highlight-" .. event.buf, { clear = true })
 
 						vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
 							buffer = event.buf,
@@ -83,18 +66,17 @@ return {
 						})
 
 						vim.api.nvim_create_autocmd("LspDetach", {
-							group = vim.api.nvim_create_augroup("user-lsp-detach", { clear = true }),
+							buffer = event.buf,
+							group = highlight_augroup,
+							once = true,
 							callback = function(event2)
 								vim.lsp.buf.clear_references()
-								vim.api.nvim_clear_autocmds({
-									group = "user-lsp-highlight",
-									buffer = event2.buf,
-								})
+								vim.api.nvim_clear_autocmds({ group = highlight_augroup, buffer = event2.buf })
 							end,
 						})
 					end
 
-					if client and client:supports_method("textDocument/inlayHint") then
+					if client:supports_method("textDocument/inlayHint") then
 						vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
 						vim.keymap.set("n", "<leader>th", function()
 							local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf })
@@ -102,10 +84,8 @@ return {
 						end, { buffer = event.buf, desc = "[T]oggle Inlay [H]ints" })
 					end
 
-					if client and client:supports_method("textDocument/codeLens") then
-						pcall(function()
-							vim.lsp.codelens.enable(true, { bufnr = event.buf })
-						end)
+					if client:supports_method("textDocument/codeLens") then
+						vim.lsp.codelens.enable(true, { bufnr = event.buf })
 					end
 				end,
 			})
@@ -196,44 +176,6 @@ return {
 					},
 				},
 
-				basedpyright = {
-					cmd = { exe("basedpyright-langserver"), "--stdio" },
-					filetypes = { "python" },
-					root_markers = {
-						"pyproject.toml",
-						"setup.py",
-						"setup.cfg",
-						"requirements.txt",
-						"Pipfile",
-						"pyrightconfig.json",
-						".git",
-						".jj",
-					},
-					settings = {
-						basedpyright = {
-							-- Diagnostics/type checking only.
-							disableLanguageServices = true,
-							analysis = {
-								diagnosticMode = "workspace",
-								typeCheckingMode = "strict",
-								autoSearchPaths = true,
-								useLibraryCodeForTypes = true,
-								diagnosticSeverityOverrides = {
-									reportAny = "none",
-									reportUnknownArgumentType = "error",
-									reportUnknownLambdaType = "warning",
-									reportUnknownMemberType = "error",
-									reportUnknownParameterType = "error",
-									reportUnknownVariableType = "error",
-									reportUnnecessaryCast = "error",
-									reportMatchNotExhaustive = "error",
-									reportUnusedCallResult = "error",
-								},
-							},
-						},
-					},
-				},
-
 				ty = {
 					cmd = { exe("ty"), "server" },
 					filetypes = { "python" },
@@ -245,74 +187,7 @@ return {
 						".git",
 						".jj",
 					},
-					settings = {
-						ty = {
-							diagnosticMode = "off",
-						},
-					},
 				},
-				-- basedpyright = {
-				-- 	cmd = { exe("basedpyright-langserver"), "--stdio" },
-				-- 	filetypes = { "python" },
-				-- 	root_markers = {
-				-- 		"pyproject.toml",
-				-- 		"setup.py",
-				-- 		"setup.cfg",
-				-- 		"requirements.txt",
-				-- 		"Pipfile",
-				-- 		"pyrightconfig.json",
-				-- 		".git",
-				-- 		".jj",
-				-- 	},
-				-- 	settings = {
-				-- 		basedpyright = {
-				-- 			disableLanguageServices = false,
-				-- 			analysis = {
-				-- 				diagnosticMode = "workspace",
-				-- 				typeCheckingMode = "strict",
-				-- 				autoSearchPaths = true,
-				-- 				autoImportCompletions = true,
-				-- 				useLibraryCodeForTypes = true,
-				-- 				diagnosticSeverityOverrides = {
-				-- 					reportAny = "none",
-				-- 					reportUnknownArgumentType = "error",
-				-- 					reportUnknownLambdaType = "warning",
-				-- 					reportUnknownMemberType = "error",
-				-- 					reportUnknownParameterType = "error",
-				-- 					reportUnknownVariableType = "error",
-				-- 					reportUnnecessaryCast = "error",
-				-- 					reportMatchNotExhaustive = "error",
-				-- 					reportUnusedCallResult = "error",
-				-- 				},
-				-- 			},
-				-- 		},
-				-- 	},
-				-- },
-				--
-				-- ty = {
-				-- 	cmd = { exe("ty"), "server" },
-				-- 	filetypes = { "python" },
-				-- 	root_markers = {
-				-- 		"pyproject.toml",
-				-- 		"setup.py",
-				-- 		"setup.cfg",
-				-- 		"requirements.txt",
-				-- 		".git",
-				-- 		".jj",
-				-- 	},
-				-- 	settings = {
-				-- 		ty = {
-				-- 			diagnosticMode = "openFilesOnly",
-				-- 		},
-				-- 	},
-				-- 	handlers = {
-				-- 		-- Keep ty's inlay hints and navigation, but let basedpyright
-				-- 		-- be the only server that displays diagnostics.
-				-- 		["textDocument/publishDiagnostics"] = function() end,
-				-- 		["textDocument/diagnostic"] = function() end,
-				-- 		["workspace/diagnostic"] = function() end,
-				-- 	},
-				-- },
 
 				tinymist = {
 					cmd = { exe("tinymist") },
@@ -397,7 +272,7 @@ return {
 				if server.cmd and (not server.cmd[1] or server.cmd[1] == "") then
 					vim.notify("Skipping " .. server_name .. ": missing executable", vim.log.levels.WARN)
 				else
-					vim.lsp.config(server_name, with_capabilities(server))
+					vim.lsp.config(server_name, vim.tbl_deep_extend("force", { capabilities = capabilities }, server))
 					vim.lsp.enable(server_name)
 				end
 			end

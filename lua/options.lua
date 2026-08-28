@@ -1,5 +1,15 @@
 vim.opt.number = true
 vim.wo.relativenumber = true
+vim.opt.winborder = "rounded"
+vim.g.clipboard = "osc52"
+vim.opt.sessionoptions =
+	{ "buffers", "curdir", "tabpages", "winsize", "help", "globals", "skiprtp", "folds", "localoptions" }
+
+vim.filetype.add({
+	extension = {
+		sh = "bash",
+	},
+})
 -- You can also add relative line numbers, for help with jumping.
 --  Experiment for yourself to see if you like it!
 -- vim.opt.relativenumber = true
@@ -50,16 +60,6 @@ vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
-
--- let g:
-vim.g.vimtex_quickfix_open_on_warning = 0
-vim.g.vimtex_view_method = "zathura"
-vim.g.vimtex_view_general_viewer = "zathura"
-vim.g.vimtex_quickfix_ignore_filters = {
-	"Underfull",
-	"Overfull",
-	"geometry Warning",
-}
 
 local minishell_dir = vim.fs.normalize(vim.fn.expand("~/Downloads/minishell"))
 local current_dir = vim.fs.normalize(vim.fn.getcwd())

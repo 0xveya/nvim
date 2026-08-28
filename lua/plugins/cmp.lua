@@ -3,6 +3,9 @@ return {
 		"hrsh7th/nvim-cmp",
 		event = "InsertEnter",
 		version = false,
+		init = function()
+			vim.env.LUASNIP_OVERRIDE_LOGPATH = "/tmp"
+		end,
 		dependencies = {
 			{
 				"L3MON4D3/LuaSnip",
@@ -14,12 +17,10 @@ return {
 				end)(),
 			},
 			"saadparwaiz1/cmp_luasnip",
-
 			"hrsh7th/cmp-nvim-lsp",
 			"hrsh7th/cmp-path",
 		},
 		config = function()
-			-- See `:help cmp`
 			local cmp = require("cmp")
 			local luasnip = require("luasnip")
 			luasnip.config.setup({})
@@ -31,15 +32,11 @@ return {
 					end,
 				},
 				completion = { completeopt = "menu,menuone,noinsert" },
-
 				mapping = cmp.mapping.preset.insert({
 					["<C-n>"] = cmp.mapping.select_next_item(),
 					["<C-p>"] = cmp.mapping.select_prev_item(),
-
 					["<C-y>"] = cmp.mapping.confirm({ select = true }),
-
 					["<C-Space>"] = cmp.mapping.complete({}),
-
 					["<C-l>"] = cmp.mapping(function()
 						if luasnip.expand_or_locally_jumpable() then
 							luasnip.expand_or_jump()
@@ -56,7 +53,6 @@ return {
 					{ name = "luasnip" },
 					{ name = "path" },
 					{ name = "vim-dadbod-completion" },
-					-- { name = "supermaven" }, -- not used: supermaven runs as inline ghost text
 				},
 			})
 		end,
