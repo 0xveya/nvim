@@ -99,7 +99,10 @@ return {
 			view_options = {
 				show_hidden = false,
 				is_hidden_file = function(name, bufnr)
-					if name ~= "." and name ~= ".." and vim.startswith(name, ".") then
+					if name == "." or name == ".." then
+						return false
+					end
+					if vim.startswith(name, ".") then
 						return true
 					end
 					local directory = require("oil").get_current_dir(bufnr)
