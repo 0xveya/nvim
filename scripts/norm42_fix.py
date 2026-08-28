@@ -64,6 +64,11 @@ except RuntimeError as error:
 had_newline = src.endswith("\n")
 lines = src.splitlines()
 
+if is_header:
+    for i, line in enumerate(lines):
+        lines[i] = re.sub(r"^#(define|include)\b", r"# \1", line)
+        lines[i] = re.sub(r"^} +(?=[A-Za-z_])", "}\t", lines[i])
+
 
 def width(line):
     return len(line.expandtabs(4))
@@ -257,7 +262,9 @@ while i < len(lines):
                 stripped = lines[j].lstrip()
 
                 if stripped:
-                    if not is_header:
+                    if is_header:
+                        lines[j] = "\t" * (header_func_width // 4 + 1) + stripped
+                    else:
                         lines[j] = "\t\t\t\t\t\t" + stripped
 
                 depth += lines[j].count("(")
@@ -294,6 +301,45 @@ while i < len(lines):
     i += 1
 
 lines = out
+
+
+HEADER_MEMBER = re.compile(
+    r"^\t"
+    r"(?P<type>(?:struct\s+)?(?:enum\s+)?[A-Za-z_][A-Za-z0-9_]*)"
+    r"[ \t]+"
+    r"(?P<ptr>\**)(?P<name>[A-Za-z_][A-Za-z0-9_]*)"
+    r"(?P<rest>.*;)$"
+)
+
+if is_header:
+    i = 0
+    while i < len(lines):
+        if not lines[i].startswith("typedef struct "):
+            i += 1
+            continue
+        start = i + 2
+        end = start
+        members = []
+        while end < len(lines):
+            match = HEADER_MEMBER.match(lines[end])
+            if not match:
+                break
+            members.append(match)
+            end += 1
+        if members:
+            target = max(width("\t" + match.group("type")) for match in members)
+            target = (target // 4 + 1) * 4
+            for offset, match in enumerate(members):
+                prefix = "\t" + match.group("type")
+                while width(prefix) < target:
+                    prefix += "\t"
+                lines[start + offset] = (
+                    prefix
+                    + match.group("ptr")
+                    + match.group("name")
+                    + match.group("rest")
+                )
+        i = max(end, i + 1)
 
 
 # If attribute attachment is too long, split before final parameter.

@@ -14,7 +14,8 @@ local function in_42_dir(bufnr)
 end
 
 local function c_formatters(bufnr)
-	if in_42_dir(bufnr) then
+	local path = vim.api.nvim_buf_get_name(bufnr)
+	if in_42_dir(bufnr) and (vim.endswith(path, ".c") or vim.endswith(path, ".h")) then
 		return { "norm42_fix" }
 	end
 	return { "clang-format" }
@@ -33,10 +34,12 @@ return {
 		opts = {
 			notify_on_error = false,
 
-			format_on_save = {
-				timeout_ms = 500,
-				lsp_format = "fallback",
-			},
+			format_on_save = function(bufnr)
+				return {
+					timeout_ms = in_42_dir(bufnr) and 2000 or 500,
+					lsp_format = "fallback",
+				}
+			end,
 
 			formatters_by_ft = {
 				lua = { "stylua" },
@@ -61,7 +64,7 @@ return {
 				end,
 
 				c = c_formatters,
-				cpp = { "clang-format" },
+				cpp = c_formatters,
 
 				go = { "goimports" },
 				powershell = { "ps_formatter" },
