@@ -1,3 +1,9 @@
+local goofy = require("goofy")
+
+local function picker_args()
+	return goofy.args(vim.uv.cwd())
+end
+
 return {
 	"folke/snacks.nvim",
 	priority = 1000,
@@ -46,52 +52,14 @@ return {
 		picker = {
 			enabled = true,
 			ui_select = true,
+			sources = {
+				files = { exclude = { ".jj" } },
+				grep = { exclude = { ".jj" } },
+			},
 			win = {
 				preview = {
 					wo = {
 						conceallevel = 0,
-					},
-				},
-			},
-			sources = {
-				files = {
-					exclude = {
-						"*.o",
-						"*.a",
-						".git",
-						"node_modules",
-						"*.out",
-						".jj",
-						".zig-cache",
-						"zig-out",
-						"target",
-						".venv",
-						".mypy_cache",
-						".ruff_cache",
-						".pytest_cache",
-						"__pycache__",
-						".toolchain",
-						"data/raw",
-					},
-				},
-				grep = {
-					exclude = {
-						"*.o",
-						"*.a",
-						".git",
-						"node_modules",
-						"*.out",
-						".jj",
-						".zig-cache",
-						"zig-out",
-						"target",
-						".venv",
-						".mypy_cache",
-						".ruff_cache",
-						"__pycache__",
-						".pytest_cache",
-						".toolchain",
-						"data/raw",
 					},
 				},
 			},
@@ -156,7 +124,7 @@ return {
 		{
 			"<leader>sf",
 			function()
-				Snacks.picker.files({ hidden = true, ignored = true })
+				Snacks.picker.files({ hidden = true, args = picker_args() })
 			end,
 			desc = "[S]earch [F]iles",
 		},
@@ -170,14 +138,14 @@ return {
 		{
 			"<leader>sw",
 			function()
-				Snacks.picker.grep_word()
+				Snacks.picker.grep_word({ args = picker_args() })
 			end,
 			desc = "[S]earch current [W]ord",
 		},
 		{
 			"<leader>sg",
 			function()
-				Snacks.picker.grep()
+				Snacks.picker.grep({ args = picker_args() })
 			end,
 			desc = "[S]earch by [G]rep",
 		},

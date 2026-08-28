@@ -1,9 +1,49 @@
+local goofy = require("goofy")
+
+local function new_visible_files_cache()
+	return setmetatable({}, {
+		__index = function(cache, directory)
+			local command = {
+				"fd",
+				"--max-depth",
+				"1",
+				"--min-depth",
+				"1",
+				"--hidden",
+				"--no-require-git",
+				"--strip-cwd-prefix",
+			}
+			vim.list_extend(command, goofy.args(directory))
+			local result = vim.system(command, { cwd = directory, text = true }):wait()
+			local visible = result.code == 0 and {} or false
+			if visible then
+				for line in vim.gsplit(result.stdout, "\n", { plain = true, trimempty = true }) do
+					visible[line:gsub("/$", "")] = true
+				end
+			end
+			rawset(cache, directory, visible)
+			return visible
+		end,
+	})
+end
+
+local visible_files = new_visible_files_cache()
+
 return {
 	{
 		"stevearc/oil.nvim",
 		dependencies = {
 			"nvim-tree/nvim-web-devicons",
 		},
+		config = function(_, opts)
+			local refresh = require("oil.actions").refresh
+			local refresh_callback = refresh.callback
+			refresh.callback = function(...)
+				visible_files = new_visible_files_cache()
+				refresh_callback(...)
+			end
+			require("oil").setup(opts)
+		end,
 		opts = {
 			default_file_explorer = true,
 			columns = {
@@ -53,9 +93,14 @@ return {
 			},
 			use_default_keymaps = false,
 			view_options = {
-				show_hidden = true,
-				is_hidden_file = function(name, _)
-					return vim.startswith(name, ".")
+				show_hidden = false,
+				is_hidden_file = function(name, bufnr)
+					if vim.startswith(name, ".") then
+						return true
+					end
+					local directory = require("oil").get_current_dir(bufnr)
+					local visible = directory and visible_files[directory]
+					return visible and not visible[name] or false
 				end,
 				is_always_hidden = function(_, _)
 					return false
