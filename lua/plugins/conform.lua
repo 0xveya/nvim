@@ -6,11 +6,18 @@ local function in_42_dir(bufnr)
 
 	for _, dir in ipairs(dirs) do
 		dir = vim.fs.normalize(vim.fn.expand(dir))
-		if vim.startswith(path, dir) then
+		if path == dir or vim.startswith(path, dir .. "/") then
 			return true
 		end
 	end
 	return false
+end
+
+local function c_formatters(bufnr)
+	if in_42_dir(bufnr) then
+		return { "norm42_fix" }
+	end
+	return { "clang-format" }
 end
 
 local prettier = vim.fn.resolve(vim.fn.exepath("prettier"))
@@ -53,13 +60,7 @@ return {
 					return { "ruff_format" }
 				end,
 
-				c = function(bufnr)
-					if in_42_dir(bufnr) then
-						return { "norm42_fix" }
-					end
-					return { "clang-format" }
-				end,
-
+				c = c_formatters,
 				cpp = { "clang-format" },
 
 				go = { "goimports" },

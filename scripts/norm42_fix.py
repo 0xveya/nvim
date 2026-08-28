@@ -1,6 +1,7 @@
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -27,6 +28,21 @@ def clang_format(source, filename):
     return result.stdout
 
 
+def is_norm_compliant(source, filename):
+    try:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / Path(filename).name
+            path.write_text(source)
+            result = subprocess.run(
+                ["uv", "tool", "run", "norminette", "--no-colors", str(path)],
+                capture_output=True,
+                check=False,
+            )
+    except OSError:
+        return False
+    return result.returncode == 0
+
+
 if len(sys.argv) != 2:
     sys.stderr.write("usage: norm42_fix.py FILE.c|FILE.h\n")
     raise SystemExit(2)
@@ -36,8 +52,12 @@ if not filename.endswith((".c", ".h")):
     sys.stderr.write("norm42_fix.py only formats C source and headers\n")
     raise SystemExit(2)
 is_header = filename.endswith(".h")
+source = sys.stdin.read()
+if is_norm_compliant(source, filename):
+    sys.stdout.write(source)
+    raise SystemExit(0)
 try:
-    src = clang_format(sys.stdin.read(), filename)
+    src = clang_format(source, filename)
 except RuntimeError as error:
     sys.stderr.write(f"norm42_fix.py: {error}\n")
     raise SystemExit(1) from error
@@ -351,6 +371,20 @@ lines = out
 # MIXED_SPACE_TAB errors.
 
 
+def leading_tabs(line):
+    return len(line) - len(line.lstrip("\t"))
+
+
+for i in range(1, len(lines)):
+    stripped = lines[i].lstrip()
+    previous = lines[i - 1]
+
+    if stripped.startswith(("&&", "||")):
+        lines[i] = "\t" * (leading_tabs(previous) + 1) + stripped
+    elif previous.rstrip().endswith("("):
+        lines[i] = "\t" * (leading_tabs(previous) + 2) + stripped
+
+
 # Calls on the right side of an assignment need two continuation levels in
 # addition to their block indentation.
 i = 0
@@ -636,7 +670,7 @@ for i, line in enumerate(lines):
     )
 
 
-sys.stdout.write(
-    "\n".join(lines)
-    + ("\n" if had_newline else "")
-)
+formatted = "\n".join(lines) + ("\n" if had_newline else "")
+if not is_norm_compliant(formatted, filename):
+    formatted = source
+sys.stdout.write(formatted)
