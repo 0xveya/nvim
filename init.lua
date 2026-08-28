@@ -5,6 +5,7 @@ vim.env.PATH = vim.env.HOME .. "/.local/share/mise/shims:" .. vim.env.PATH
 require("options")
 require("keymaps")
 require("autocmds")
+require("cppm").setup()
 require("diagnostics")
 require("lazy-bootstrap")
 require("lazy-plugins")
