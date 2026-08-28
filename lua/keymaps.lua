@@ -54,16 +54,15 @@ nmap("<C-A-v>", "<cmd>vsplit<CR>")
 nmap("<M-j>", "<cmd>cnext<CR>")
 nmap("<M-k>", "<cmd>cprev<CR>")
 
-xmap("<leader>y", require("go_rename").rename_visual_assignment, "Rename the selected Go assignment")
-
-nmap("<leader>ga", "<cmd>GoCodeAction<CR>", "Go Code Action")
-nmap("<leader>grg", "<cmd>GoRename<CR>", "LSP Rename (Go)")
-nmap("<leader>gi", "<cmd>GoIfErr<CR>", "Add if err")
-nmap("<leader>gc", "<cmd>GoCmt<CR>", "Generate Comment")
-
-nmap("<leader>gj", "<cmd>GoAddTag json<CR>", "Add JSON tags")
-nmap("<leader>gy", "<cmd>GoAddTag yaml<CR>", "Add YAML tags")
-
-nmap("<leader>gq", "<cmd>GoAlt<CR>", "Switch to Test/Implementation file")
+if not require("profile").lite then
+	xmap("<leader>y", require("go_rename").rename_visual_assignment, "Rename the selected Go assignment")
+	nmap("<leader>ga", "<cmd>GoCodeAction<CR>", "Go Code Action")
+	nmap("<leader>grg", "<cmd>GoRename<CR>", "LSP Rename (Go)")
+	nmap("<leader>gi", "<cmd>GoIfErr<CR>", "Add if err")
+	nmap("<leader>gc", "<cmd>GoCmt<CR>", "Generate Comment")
+	nmap("<leader>gj", "<cmd>GoAddTag json<CR>", "Add JSON tags")
+	nmap("<leader>gy", "<cmd>GoAddTag yaml<CR>", "Add YAML tags")
+	nmap("<leader>gq", "<cmd>GoAlt<CR>", "Switch to Test/Implementation file")
+end
 nmap("<leader>cl", vim.lsp.codelens.run, "Run Code Lens")
 nmap("<leader>k", "<cmd>qa<CR>", "quit erm")

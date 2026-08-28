@@ -10,8 +10,10 @@ require("diagnostics")
 require("lazy-bootstrap")
 require("lazy-plugins")
 
-require("mistral_fix").setup({
-	agent_id = "ag:a1053bd4:20251014:i-love-spelling:814f38c9",
-})
+if not require("profile").lite then
+	require("mistral_fix").setup({
+		agent_id = "ag:a1053bd4:20251014:i-love-spelling:814f38c9",
+	})
+end
 
 vim.o.autowriteall = true

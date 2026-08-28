@@ -60,12 +60,7 @@ return {
 					return { "clang-format" }
 				end,
 
-				cpp = function(bufnr)
-					if in_42_dir(bufnr) then
-						return { "norm42_fix" }
-					end
-					return { "clang-format" }
-				end,
+				cpp = { "clang-format" },
 
 				go = { "goimports" },
 				powershell = { "ps_formatter" },

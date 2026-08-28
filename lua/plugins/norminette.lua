@@ -1,7 +1,7 @@
 return {
 	{
 		"0xveya/dogshitnorm.nvim",
-		ft = { "c", "cpp", "make", "python" },
+		ft = require("profile").lite and { "c", "make" } or { "c", "cpp", "make", "python" },
 		cmd = {
 			"Makegen",
 			"Pyprojectgen",
@@ -93,10 +93,8 @@ return {
 				},
 			},
 
-			active_dirs = {
-				"~/coding/42",
-				"~/Downloads/minishell",
-			},
+			active_dirs = require("profile").lite and { require("profile").coding_dir }
+				or { "~/coding/42", "~/Downloads/minishell" },
 		},
 	},
 }

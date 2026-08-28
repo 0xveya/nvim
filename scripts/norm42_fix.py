@@ -1,9 +1,46 @@
 import re
+import subprocess
 import sys
+from pathlib import Path
+
+
+def clang_format(source, filename):
+    style = Path(__file__).with_name("norm42.clang-format")
+    command = [
+        "clang-format",
+        f"--style=file:{style}",
+        f"--assume-filename={filename}",
+    ]
+    try:
+        result = subprocess.run(
+            command,
+            input=source,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except OSError as error:
+        raise RuntimeError(f"could not run clang-format: {error}") from error
+    if result.returncode != 0:
+        detail = result.stderr.strip() or f"exit status {result.returncode}"
+        raise RuntimeError(f"clang-format failed: {detail}")
+    return result.stdout
+
+
+if len(sys.argv) != 2:
+    sys.stderr.write("usage: norm42_fix.py FILE.c|FILE.h\n")
+    raise SystemExit(2)
 
 filename = sys.argv[1]
+if not filename.endswith((".c", ".h")):
+    sys.stderr.write("norm42_fix.py only formats C source and headers\n")
+    raise SystemExit(2)
 is_header = filename.endswith(".h")
-src = sys.stdin.read()
+try:
+    src = clang_format(sys.stdin.read(), filename)
+except RuntimeError as error:
+    sys.stderr.write(f"norm42_fix.py: {error}\n")
+    raise SystemExit(1) from error
 had_newline = src.endswith("\n")
 lines = src.splitlines()
 
@@ -117,9 +154,6 @@ for i, line in enumerate(lines):
 
     m = FUNC_START.match(line)
     if not m:
-        continue
-
-    if is_header:
         continue
 
     name_tabs = "\t"

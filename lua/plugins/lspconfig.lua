@@ -268,6 +268,10 @@ return {
 				},
 			}
 
+			if require("profile").lite then
+				servers = { clangd = servers.clangd }
+			end
+
 			for server_name, server in pairs(servers) do
 				if server.cmd and (not server.cmd[1] or server.cmd[1] == "") then
 					vim.notify("Skipping " .. server_name .. ": missing executable", vim.log.levels.WARN)

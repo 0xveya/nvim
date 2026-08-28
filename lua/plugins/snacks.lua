@@ -12,7 +12,7 @@ return {
 	opts = {
 		bigfile = { enabled = true },
 		dashboard = {
-			enabled = true,
+			enabled = not require("profile").lite,
 			formats = {
 				key = function(item)
 					return { { "[", hl = "special" }, { item.key, hl = "key" }, { "]", hl = "special" } }
@@ -37,7 +37,7 @@ return {
 		},
 		explorer = { enabled = false },
 		image = {
-			enabled = true,
+			enabled = not require("profile").lite,
 			doc = {
 				enabled = false,
 				inline = false,

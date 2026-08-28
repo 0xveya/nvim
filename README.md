@@ -41,5 +41,18 @@ press `g.` to show or hide them.
 Put extra picker-only ignores in a project-root `.goofy` using Gitignore syntax.
 These paths stay visible to version control but disappear from Snacks and Oil.
 
-Saving a `*.cppm` file in an XMake project regenerates `compile_commands.json`
-through `mise run compiledb` when available, then restarts `clangd`.
+Changing a `*.cppm` module/import directive runs an asynchronous clangd check.
+On success it regenerates `compile_commands.json` through `mise run compiledb`
+when available, then restarts clangd. Ordinary body edits do neither.
+
+## Portable 42/C setup
+
+This installs the C/Norminette profile and all its tools under `~/.local`:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/0xveya/nvim/master/scripts/install-42-lite.sh | bash
+```
+
+Run `nvim-42`. It needs `curl`, `git`, `python3`, and `cc`, but never uses sudo
+or `apt`. Pass `--user`, `--mail`, or `--coding-dir` after `bash -s --` to
+override the defaults. Put project-only picker and Oil ignores in `.goofy`.

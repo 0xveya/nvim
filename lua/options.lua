@@ -31,7 +31,10 @@ vim.opt.scrolloff = 10
 local minishell_dir = vim.fs.normalize(vim.fn.expand("~/Downloads/minishell"))
 local current_dir = vim.fs.normalize(vim.fn.getcwd())
 
-if current_dir == minishell_dir or vim.startswith(current_dir, minishell_dir .. "/") then
+if vim.env.VEYA_42_USER and vim.env.VEYA_42_MAIL then
+	vim.g.user42 = vim.env.VEYA_42_USER
+	vim.g.mail42 = vim.env.VEYA_42_MAIL
+elseif current_dir == minishell_dir or vim.startswith(current_dir, minishell_dir .. "/") then
 	vim.g.user42 = "flaltens"
 	vim.g.mail42 = "flaltens@student.42vienna.com"
 else
