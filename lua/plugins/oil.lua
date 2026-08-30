@@ -102,6 +102,9 @@ return {
 					if name == "." or name == ".." then
 						return false
 					end
+					if goofy.is_project_metadata(name) then
+						return false
+					end
 					if vim.startswith(name, ".") then
 						return true
 					end

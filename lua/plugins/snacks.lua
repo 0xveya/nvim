@@ -53,7 +53,7 @@ return {
 			enabled = true,
 			ui_select = true,
 			sources = {
-				files = { exclude = { ".jj" } },
+				files = { hidden = true, exclude = { ".jj" } },
 				grep = { exclude = { ".jj" } },
 			},
 			win = {

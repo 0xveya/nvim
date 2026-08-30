@@ -36,7 +36,8 @@ The leader key is Space. Useful starting points:
 
 Snacks and Oil respect nested `.gitignore`, `.ignore`, and `.fdignore` files,
 including in JJ-only repositories. Oil hides ignored build artifacts by default;
-press `g.` to show or hide them.
+press `g.` to show or hide them. Common repository metadata such as `.gitignore`,
+`.github`, `.forgejo`, and CI configuration stays visible in Oil and file pickers.
 
 Put extra picker-only ignores in a project-root `.goofy` using Gitignore syntax.
 These paths stay visible to version control but disappear from Snacks and Oil.
